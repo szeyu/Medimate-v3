@@ -17,6 +17,7 @@
     "@react-navigation/native": "^7.0.15",
     "@react-navigation/stack": "^7.1.2",
     "expo": "~52.0.39",
+    "expo-sqlite": "~15.1.2",
     "expo-status-bar": "~2.0.1",
     "lucide-react-native": "^0.483.0",
     "react": "18.3.1",
@@ -26,8 +27,7 @@
     "react-native-screens": "^4.9.2",
     "react-native-sqlite-storage": "^6.0.1",
     "react-native-svg": "^15.11.2",
-    "react-native-vector-icons": "^10.2.0",
-    "expo-sqlite": "~15.1.2"
+    "react-native-vector-icons": "^10.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

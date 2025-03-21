@@ -15,12 +15,34 @@ import MedicationScreen from './src/screens/MedicationScreen';
 import AddMedicationScreen from './src/screens/AddMedicationScreen';
 import MedicationDetailScreen from './src/screens/MedicationDetailScreen';
 import MedicationScheduleScreen from './src/screens/MedicationScheduleScreen';
+import TestGlucoseLevelScreen from './src/screens/TestGlucoseLevelScreen';
 
 // Import providers
 import { MedicationProvider } from './src/providers/MedicationProvider';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+
+// Create a stack navigator for the Home tab
+const HomeStack = () => {
+  return (
+    <Stack.Navigator 
+      screenOptions={{
+        headerShown: false
+      }}
+    >
+      <Stack.Screen 
+        name="HomeScreen" 
+        component={HomeScreen} 
+      />
+      <Stack.Screen 
+        name="TestGlucoseLevel" 
+        component={TestGlucoseLevelScreen} 
+      />
+      {/* Add other screens accessible from Home here */}
+    </Stack.Navigator>
+  );
+};
 
 const MedicationStack = () => {
   return (
@@ -85,14 +107,14 @@ const App = () => {
                 }
                 return <Icon name={iconName} size={size} color={color} />;
               },
-              headerShown:false// Hide all headers in Tab.Navigator
+              headerShown: false // Hide all headers in Tab.Navigator
             })}
             tabBarOptions={{
               activeTintColor: '#1167FE',
               inactiveTintColor: 'gray',
             }}
           >
-            <Tab.Screen name="Home" component={HomeScreen} />
+            <Tab.Screen name="Home" component={HomeStack} />
             <Tab.Screen name="Stats" component={HomeScreen} />
             <Tab.Screen name="Add" component={HomeScreen} options={{ tabBarLabel: '',}}  />
             <Tab.Screen name="Medications" component={MedicationStack}/>

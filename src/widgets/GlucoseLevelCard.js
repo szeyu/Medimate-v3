@@ -1,8 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useNavigation } from '@react-navigation/native';
 
-const GlucoseLevelCard = ({ navigation }) => {
+const GlucoseLevelCard = () => {
+  const navigation = useNavigation();
+
   return (
     <View>
       <View style={styles.sectionHeader}>
@@ -11,7 +14,9 @@ const GlucoseLevelCard = ({ navigation }) => {
       </View>
       <TouchableOpacity 
         style={[styles.card, styles.glucoseCard]} 
-        onPress={() => navigation.navigate('TestGlucoseLevel')}
+        onPress={() => {
+          navigation.navigate('TestGlucoseLevel');
+        }}
       >
         <View style={styles.glucoseCardContent}>
           <View style={styles.glucoseLevelContainer}>
@@ -33,6 +38,9 @@ const GlucoseLevelCard = ({ navigation }) => {
           <Icon name="chevron-right" size={24} color="#1167FE" />
         </View>
       </TouchableOpacity>
+      <Text style={styles.tapToTestText}>
+        Test your glucose level with voice
+      </Text>
     </View>
   );
 };
@@ -119,6 +127,13 @@ const styles = StyleSheet.create({
   },
   glucoseCardArrow: {
     padding: 8,
+  },
+  tapToTestText: {
+    fontSize: 12,
+    color: '#1167FE',
+    textAlign: 'center',
+    marginTop: 8,
+    fontStyle: 'italic',
   },
 });
 
