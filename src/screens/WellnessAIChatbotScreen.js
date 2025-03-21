@@ -10,6 +10,7 @@ import {
   Platform,
   ActivityIndicator,
   SafeAreaView,
+  StatusBar,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
@@ -56,6 +57,11 @@ const WellnessAIChatbotScreen = ({ navigation }) => {
       'Improve sleep quality',
       'Lose 15 pounds',
     ],
+  };
+
+  // Switch to voice mode
+  const switchToVoiceMode = () => {
+    navigation.replace('VoiceAssistance');
   };
 
   const sendMessage = () => {
@@ -237,6 +243,7 @@ const WellnessAIChatbotScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar backgroundColor="#FFFFFF" barStyle="dark-content" />
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Icon name="arrow-back" size={24} color="#000000" />
@@ -244,6 +251,16 @@ const WellnessAIChatbotScreen = ({ navigation }) => {
         <Text style={styles.headerTitle}>Wellness AI Assistant</Text>
         <TouchableOpacity>
           <Icon name="more-vert" size={24} color="#000000" />
+        </TouchableOpacity>
+      </View>
+      
+      <View style={styles.modeToggleContainer}>
+        <TouchableOpacity 
+          style={styles.modeToggleButton}
+          onPress={switchToVoiceMode}
+        >
+          <Icon name="mic" size={18} color="#1167FE" />
+          <Text style={styles.modeToggleText}>Switch to Voice Mode</Text>
         </TouchableOpacity>
       </View>
 
@@ -431,6 +448,31 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: {
     backgroundColor: '#F5F5F5',
+  },
+  modeToggleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  modeToggleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F7FF',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#D0E1FF',
+  },
+  modeToggleText: {
+    fontSize: 14,
+    color: '#1167FE',
+    marginLeft: 6,
   },
 });
 
