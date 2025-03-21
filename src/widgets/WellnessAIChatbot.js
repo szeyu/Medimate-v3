@@ -1,10 +1,16 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useNavigation } from '@react-navigation/native';
 
 const WellnessAIChatbot = () => {
+  const navigation = useNavigation();
+
   return (
-    <View style={styles.card}>
+    <TouchableOpacity 
+      style={styles.card}
+      onPress={() => navigation.navigate('WellnessAIChatbot')}
+    >
       <View style={styles.cardHeaderWithHelp}>
         <View style={styles.cardHeader}>
           <Icon name="chat-bubble-outline" size={20} color="#000000" />
@@ -32,7 +38,7 @@ const WellnessAIChatbot = () => {
           </View>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 

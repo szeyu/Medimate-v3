@@ -16,6 +16,7 @@ import AddMedicationScreen from './src/screens/AddMedicationScreen';
 import MedicationDetailScreen from './src/screens/MedicationDetailScreen';
 import MedicationScheduleScreen from './src/screens/MedicationScheduleScreen';
 import TestGlucoseLevelScreen from './src/screens/TestGlucoseLevelScreen';
+import WellnessAIChatbotScreen from './src/screens/WellnessAIChatbotScreen';
 
 // Import providers
 import { MedicationProvider } from './src/providers/MedicationProvider';
@@ -38,6 +39,10 @@ const HomeStack = () => {
       <Stack.Screen 
         name="TestGlucoseLevel" 
         component={TestGlucoseLevelScreen} 
+      />
+      <Stack.Screen 
+        name="WellnessAIChatbot" 
+        component={WellnessAIChatbotScreen} 
       />
       {/* Add other screens accessible from Home here */}
     </Stack.Navigator>
