@@ -85,7 +85,7 @@ const App = () => {
                 }
                 return <Icon name={iconName} size={size} color={color} />;
               },
-              headerShown: route.name === 'Home',// Hide all headers in Tab.Navigator
+              headerShown:false// Hide all headers in Tab.Navigator
             })}
             tabBarOptions={{
               activeTintColor: '#1167FE',

@@ -46,12 +46,11 @@ const buildUserHeader = () => {
       </View>
       <View style={styles.userInfo}>
         <View style={styles.userNameRow}>
-          <Text style={styles.userName}>Hi, Dekomoril</Text>
+          <Text style={styles.userName}>Hi, Guest 1</Text>
           <Icon name="verified" size={18} color="#FFC107" />
         </View>
         <View style={styles.userStatsRow}>
-          <Text style={styles.userStatsText}>88</Text>
-          <Icon name="star" size={14} color="#FFC107" style={styles.starIcon} />
+          <Text style={styles.userStatsText}>88%</Text>
           <Text style={styles.userStatsText}>Pro Member</Text>
         </View>
       </View>
@@ -68,13 +67,13 @@ const buildHealthScoreCard = () => {
         <Icon name="more-horiz" size={24} color="#000000" />
       </View>
       <View style={styles.card}>
-        <View style={styles.scoreBox}>
+        <View style={[styles.scoreBox, { backgroundColor: '#9C27B0' }]}>
           <Text style={styles.scoreText}>88</Text>
         </View>
         <View style={styles.scoreInfo}>
-          <Text style={styles.scoreTitle}>Asklepios Score</Text>
+          <Text style={styles.scoreTitle}>Medimate Score</Text>
           <Text style={styles.scoreDescription}>
-            Asklepios predicts, optimize your health with our AI-driven insights
+            Based on the data, we help you! Your health is above average
           </Text>
         </View>
       </View>
@@ -180,12 +179,20 @@ const buildFitnessTracker = () => {
     <View>
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Fitness & Activity Tracker</Text>
-        <Icon name="more-horiz" size={24} color="#000000" />
+        <TouchableOpacity>
+          <Text style={styles.seeAllText}>See All</Text>
+        </TouchableOpacity>
       </View>
       <View style={styles.card}>
-        {buildProgressBar('Calories Burned', '1500', '2000', 0.75, '#F44336', 'local-fire-department')}
+        {buildProgressBar('Calories Burned', '500', '2000', 0.25, '#F44336', 'local-fire-department')}
         <View style={styles.divider} />
-        {buildProgressBar('Steps Taken', '7500', '10000', 0.75, '#2196F3', 'directions-walk', true)}
+        {buildProgressBar('Steps Taken', '10000', '10000', 1.0, '#2196F3', 'directions-walk', true)}
+        <View style={styles.divider} />
+        {buildNutritionRow()}
+        <View style={styles.divider} />
+        {buildSleepRow()}
+        <View style={styles.divider} />
+        {buildHydrationRow()}
       </View>
     </View>
   );
@@ -205,8 +212,63 @@ const buildProgressBar = (title, current, target, progress, color, iconName, isC
         <View style={[styles.progressBarFill, { width: `${progress * 100}%`, backgroundColor: color }]} />
       </View>
       <View style={styles.progressBarLabels}>
-        <Text style={styles.progressBarCurrentLabel}>You've reached {current}</Text>
-        <Text style={styles.progressBarTargetLabel}>{target}cal</Text>
+        <Text style={styles.progressBarCurrentLabel}>{current}kcal</Text>
+        <Text style={styles.progressBarTargetLabel}>{target}kcal</Text>
+      </View>
+    </View>
+  );
+};
+
+const buildNutritionRow = () => {
+  return (
+    <View style={styles.trackerRow}>
+      <View style={styles.trackerIconContainer}>
+        <Icon name="restaurant-menu" size={20} color="#000000" />
+      </View>
+      <Text style={styles.trackerTitle}>Nutrition</Text>
+      <View style={styles.nutrientTagsContainer}>
+        <View style={[styles.nutrientTag, { backgroundColor: '#FF9800' }]}>
+          <Text style={styles.nutrientTagText}>Protein</Text>
+        </View>
+        <View style={[styles.nutrientTag, { backgroundColor: '#4CAF50' }]}>
+          <Text style={styles.nutrientTagText}>Calcium</Text>
+        </View>
+        <View style={[styles.nutrientTag, { backgroundColor: '#2196F3' }]}>
+          <Text style={styles.nutrientTagText}>+1</Text>
+        </View>
+      </View>
+    </View>
+  );
+};
+
+const buildSleepRow = () => {
+  return (
+    <View style={styles.trackerRow}>
+      <View style={styles.trackerIconContainer}>
+        <Icon name="nightlight-round" size={20} color="#000000" />
+      </View>
+      <Text style={styles.trackerTitle}>Sleep</Text>
+      <View style={styles.sleepCircleContainer}>
+        <View style={styles.sleepCircle}>
+          <Text style={styles.sleepCircleText}>11</Text>
+          <Text style={styles.sleepCircleLabel}>h</Text>
+        </View>
+        <Text style={styles.sleepQualityText}>Monthly Circadian</Text>
+      </View>
+    </View>
+  );
+};
+
+const buildHydrationRow = () => {
+  return (
+    <View style={styles.trackerRow}>
+      <View style={styles.trackerIconContainer}>
+        <Icon name="opacity" size={20} color="#000000" />
+      </View>
+      <Text style={styles.trackerTitle}>Hydration</Text>
+      <View style={styles.hydrationLabels}>
+        <Text style={styles.hydrationCurrentLabel}>700ml</Text>
+        <Text style={styles.hydrationTargetLabel}>2000ml</Text>
       </View>
     </View>
   );
@@ -291,11 +353,6 @@ const buildWellnessAIChatbot = () => {
         </View>
         <Icon name="help-outline" size={20} color="#9E9E9E" />
       </View>
-      <View style={styles.badgeContainer}>
-        <View style={styles.basicBadge}>
-          <Text style={styles.basicBadgeText}>BASIC</Text>
-        </View>
-      </View>
       <View style={styles.chatbotStats}>
         <View>
           <Text style={styles.chatbotStatsNumber}>1,922</Text>
@@ -325,49 +382,37 @@ const buildMedicationManagement = (navigation) => {
         </TouchableOpacity>
       </View>
       <View style={styles.card}>
-        <View style={styles.medicationSummary}>
-          <View style={styles.medicationSummaryItem}>
-            <Text style={styles.medicationCount}>3</Text>
-            <Text style={styles.medicationLabel}>Active Medications</Text>
-          </View>
-          <View style={styles.medicationSummaryItem}>
-            <Text style={styles.medicationCount}>98%</Text>
-            <Text style={styles.medicationLabel}>Adherence Rate</Text>
-          </View>
-        </View>
+        <Text style={styles.medicationCount}>205</Text>
+        <Text style={styles.medicationLabel}>Medications</Text>
         
-        <View style={styles.medicationActions}>
-          <TouchableOpacity 
-            style={styles.medicationActionButton}
-            onPress={() => navigation.navigate('AddMedication')}
-          >
-            <Icon name="add-circle-outline" size={24} color="#1167FE" />
-            <Text style={styles.actionButtonText}>Add Medication</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={styles.medicationActionButton}
-            onPress={() => navigation.navigate('ScanMedication')}
-          >
-            <Icon name="qr-code-scanner" size={24} color="#1167FE" />
-            <Text style={styles.actionButtonText}>Scan Medication</Text>
-          </TouchableOpacity>
-        </View>
-        
-        <View style={styles.upcomingMedication}>
-          <Text style={styles.upcomingTitle}>Upcoming Medication</Text>
-          <View style={styles.upcomingCard}>
-            <View style={styles.upcomingIconContainer}>
-              <Icon name="medication" size={24} color="#FFFFFF" />
+        <View style={styles.medicationStatusContainer}>
+          <View style={styles.medicationStatusRow}>
+            {Array(15).fill().map((_, i) => (
+              <View 
+                key={i} 
+                style={[
+                  styles.medicationStatusDot, 
+                  { 
+                    backgroundColor: i < 5 ? '#1167FE' : 
+                                    i < 10 ? '#F44336' : '#9E9E9E' 
+                  }
+                ]} 
+              />
+            ))}
+          </View>
+          <View style={styles.medicationLegend}>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: '#1167FE' }]} />
+              <Text style={styles.legendText}>Taken</Text>
             </View>
-            <View style={styles.upcomingDetails}>
-              <Text style={styles.upcomingMedName}>Amoxicillin</Text>
-              <Text style={styles.upcomingDosage}>500mg • Once daily</Text>
-              <Text style={styles.upcomingTime}>Today, 8:00 PM</Text>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: '#F44336' }]} />
+              <Text style={styles.legendText}>Missed</Text>
             </View>
-            <TouchableOpacity style={styles.upcomingTakeButton}>
-              <Text style={styles.upcomingTakeText}>Take</Text>
-            </TouchableOpacity>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: '#9E9E9E' }]} />
+              <Text style={styles.legendText}>Skipped</Text>
+            </View>
           </View>
         </View>
       </View>
@@ -676,10 +721,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  medicationLabel: {
-    fontSize: 14,
-    color: '#666666',
-  },
   medicationCalendar: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -758,6 +799,116 @@ const styles = StyleSheet.create({
     height: (Dimensions.get('window').width - 64) / 7,
     margin: 2,
     borderRadius: 4,
+  },
+  trackerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  trackerIconContainer: {
+    marginRight: 12,
+  },
+  trackerTitle: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  nutrientTagsContainer: {
+    flexDirection: 'row',
+  },
+  nutrientTag: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginLeft: 4,
+  },
+  nutrientTagText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  sleepCircleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  sleepCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#673AB7',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginRight: 8,
+  },
+  sleepCircleText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  sleepCircleLabel: {
+    color: '#FFFFFF',
+    fontSize: 10,
+  },
+  sleepQualityText: {
+    fontSize: 12,
+    color: '#666666',
+  },
+  hydrationLabels: {
+    flexDirection: 'row',
+  },
+  hydrationCurrentLabel: {
+    fontSize: 14,
+    color: '#1167FE',
+    marginRight: 8,
+  },
+  hydrationTargetLabel: {
+    fontSize: 14,
+    color: '#9E9E9E',
+  },
+  medicationCount: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1167FE',
+  },
+  medicationLabel: {
+    fontSize: 14,
+    color: '#666666',
+    marginBottom: 16,
+  },
+  medicationStatusContainer: {
+    marginTop: 16,
+  },
+  medicationStatusRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 16,
+  },
+  medicationStatusDot: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    margin: 2,
+  },
+  medicationLegend: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 12,
+  },
+  legendDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: 4,
+  },
+  legendText: {
+    fontSize: 12,
+    color: '#666666',
   },
 });
 
