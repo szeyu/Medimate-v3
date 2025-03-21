@@ -1,83 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   SafeAreaView,
-  Animated,
-  Easing,
   StatusBar,
+  Platform,
+  ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import ConversationalAIDOMWrapper from '../components/ConversationalAIDOMWrapper';
 
 const VoiceAssistanceScreen = ({ navigation }) => {
-  const [isListening, setIsListening] = useState(false);
-  const [transcript, setTranscript] = useState('');
-  const [response, setResponse] = useState('');
-  
-  // Animation values
-  const pulseAnim = new Animated.Value(1);
+  const [messages, setMessages] = useState([]);
   
   // Switch to chat mode
   const switchToChatMode = () => {
     navigation.replace('WellnessAIChatbot');
   };
   
-  // Start/stop listening
-  const toggleListening = () => {
-    setIsListening(!isListening);
-    
-    if (!isListening) {
-      // Simulate listening and response after 3 seconds
-      setTimeout(() => {
-        setTranscript("What's my blood pressure?");
-        
-        // Simulate AI response after 2 more seconds
-        setTimeout(() => {
-          setResponse("Your last recorded blood pressure was 135/85, which is slightly elevated. The ideal blood pressure is below 120/80 mmHg. Would you like some tips to help lower your blood pressure?");
-          setIsListening(false);
-        }, 2000);
-      }, 3000);
-    } else {
-      setTranscript('');
-      setResponse('');
-    }
+  // Handle new message from the AI
+  const handleNewMessage = (message) => {
+    setMessages(prevMessages => [message, ...prevMessages]);
   };
-  
-  // Pulse animation for the mic button when listening
-  useEffect(() => {
-    let pulseAnimation;
-    
-    if (isListening) {
-      pulseAnimation = Animated.loop(
-        Animated.sequence([
-          Animated.timing(pulseAnim, {
-            toValue: 1.2,
-            duration: 800,
-            easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
-          }),
-          Animated.timing(pulseAnim, {
-            toValue: 1,
-            duration: 800,
-            easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
-          }),
-        ])
-      );
-      
-      pulseAnimation.start();
-    } else {
-      pulseAnim.setValue(1);
-    }
-    
-    return () => {
-      if (pulseAnimation) {
-        pulseAnimation.stop();
-      }
-    };
-  }, [isListening]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -103,44 +49,74 @@ const VoiceAssistanceScreen = ({ navigation }) => {
       </View>
       
       <View style={styles.voiceContainer}>
-        <View style={styles.conversationContainer}>
-          {transcript ? (
-            <View style={styles.transcriptContainer}>
-              <Text style={styles.transcriptLabel}>You said:</Text>
-              <Text style={styles.transcriptText}>{transcript}</Text>
-            </View>
-          ) : null}
-          
-          {response ? (
-            <View style={styles.responseContainer}>
-              <View style={styles.aiAvatar}>
-                <Icon name="smart-toy" size={20} color="#FFFFFF" />
+        <ScrollView style={styles.conversationContainer}>
+          {messages.map((message, index) => (
+            <View 
+              key={index} 
+              style={[
+                styles.messageBubble,
+                message.source === 'ai' ? styles.aiMessage : styles.userMessage
+              ]}
+            >
+              {message.source === 'ai' && (
+                <View style={styles.aiAvatar}>
+                  <Icon name="smart-toy" size={20} color="#FFFFFF" />
+                </View>
+              )}
+              <View 
+                style={[
+                  styles.messageContent,
+                  message.source === 'ai' ? styles.aiMessageContent : styles.userMessageContent
+                ]}
+              >
+                <Text 
+                  style={[
+                    styles.messageText,
+                    message.source === 'ai' ? styles.aiMessageText : styles.userMessageText
+                  ]}
+                >
+                  {message.message}
+                </Text>
               </View>
-              <View style={styles.responseContent}>
-                <Text style={styles.responseText}>{response}</Text>
-              </View>
             </View>
-          ) : null}
-        </View>
+          ))}
+        </ScrollView>
         
         <View style={styles.micButtonContainer}>
-          <Animated.View 
-            style={[
-              styles.micButtonOuter,
-              { transform: [{ scale: pulseAnim }] }
-            ]}
-          >
-            <TouchableOpacity
-              style={[styles.micButton, isListening && styles.micButtonActive]}
-              onPress={toggleListening}
-            >
-              <Icon name="mic" size={36} color="#FFFFFF" />
-            </TouchableOpacity>
-          </Animated.View>
+          <View style={styles.domComponentContainer}>
+            <ConversationalAIDOMWrapper
+              platform={Platform.OS}
+              onMessage={handleNewMessage}
+              userHealthData={{
+                name: 'Alex',
+                age: 42,
+                gender: 'Male',
+                conditions: ['Type 2 Diabetes', 'Hypertension'],
+                medications: ['Metformin', 'Lisinopril'],
+                lifestyle: {
+                  smoker: true,
+                  exercise: 'Moderate',
+                  diet: 'Mixed, high in processed foods',
+                  sleep: '6 hours average',
+                },
+                metrics: {
+                  bloodPressure: '135/85',
+                  glucose: '100 mg/dL',
+                  weight: '195 lbs',
+                  height: '5\'10"',
+                  bmi: 28.2,
+                },
+                goals: [
+                  'Reduce blood sugar levels',
+                  'Quit smoking',
+                  'Improve sleep quality',
+                  'Lose 15 pounds',
+                ],
+              }}
+            />
+          </View>
           <Text style={styles.micInstructions}>
-            {isListening 
-              ? "Listening..." 
-              : "Tap the microphone and speak"}
+            Tap the microphone and speak
           </Text>
         </View>
         
@@ -222,28 +198,17 @@ const styles = StyleSheet.create({
     flex: 1,
     marginBottom: 16,
   },
-  transcriptContainer: {
-    backgroundColor: '#E3F2FD',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    alignSelf: 'flex-end',
-    maxWidth: '80%',
-  },
-  transcriptLabel: {
-    fontSize: 12,
-    color: '#1167FE',
-    marginBottom: 4,
-  },
-  transcriptText: {
-    fontSize: 16,
-    color: '#000000',
-  },
-  responseContainer: {
+  messageBubble: {
     flexDirection: 'row',
     marginBottom: 16,
     maxWidth: '80%',
+  },
+  aiMessage: {
     alignSelf: 'flex-start',
+  },
+  userMessage: {
+    alignSelf: 'flex-end',
+    flexDirection: 'row-reverse',
   },
   aiAvatar: {
     width: 32,
@@ -254,23 +219,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 8,
   },
-  responseContent: {
-    backgroundColor: '#FFFFFF',
+  messageContent: {
     borderRadius: 16,
-    padding: 16,
+    padding: 12,
+    maxWidth: '90%',
+  },
+  aiMessageContent: {
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E0E0E0',
   },
-  responseText: {
+  userMessageContent: {
+    backgroundColor: '#1167FE',
+  },
+  messageText: {
     fontSize: 16,
-    color: '#000000',
     lineHeight: 22,
+  },
+  aiMessageText: {
+    color: '#000000',
+  },
+  userMessageText: {
+    color: '#FFFFFF',
   },
   micButtonContainer: {
     alignItems: 'center',
     marginBottom: 24,
   },
-  micButtonOuter: {
+  domComponentContainer: {
     width: 100,
     height: 100,
     borderRadius: 50,
@@ -278,17 +254,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
+    overflow: 'hidden',
   },
-  micButton: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#1167FE',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  micButtonActive: {
-    backgroundColor: '#F44336',
+  domComponent: {
+    width: 100,
+    height: 100,
   },
   micInstructions: {
     fontSize: 16,
@@ -322,4 +292,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default VoiceAssistanceScreen; 
+export default VoiceAssistanceScreen;

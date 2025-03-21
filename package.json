@@ -10,6 +10,8 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@11labs/react": "^0.0.8",
+    "@expo/metro-runtime": "^4.0.1",
     "@react-native-community/cli": "latest",
     "@react-native-community/datetimepicker": "^8.3.0",
     "@react-native-community/slider": "^4.5.6",
@@ -17,17 +19,23 @@
     "@react-navigation/native": "^7.0.15",
     "@react-navigation/stack": "^7.1.2",
     "expo": "~52.0.39",
+    "expo-battery": "~9.0.2",
+    "expo-brightness": "~13.0.3",
+    "expo-dev-client": "^5.0.15",
     "expo-sqlite": "~15.1.2",
     "expo-status-bar": "~2.0.1",
     "lucide-react-native": "^0.483.0",
-    "react": "18.3.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-native": "0.76.7",
     "react-native-chart-kit": "^6.12.0",
     "react-native-safe-area-context": "^5.3.0",
     "react-native-screens": "^4.9.2",
     "react-native-sqlite-storage": "^6.0.1",
     "react-native-svg": "^15.11.2",
-    "react-native-vector-icons": "^10.2.0"
+    "react-native-vector-icons": "^10.2.0",
+    "react-native-web": "^0.19.13",
+    "react-native-webview": "^13.13.4"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
