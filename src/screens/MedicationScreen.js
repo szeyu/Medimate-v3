@@ -119,6 +119,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F5F5F5',
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(2, 1, 1, 0.2)',
   },
   listContainer: {
     padding: 16,

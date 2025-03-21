@@ -38,6 +38,7 @@ const MedicationScheduleScreen = ({ route, navigation }) => {
         ]}>
           {days[index]}
         </Text>
+        
       </TouchableOpacity>
     );
   };
@@ -88,7 +89,7 @@ const MedicationScheduleScreen = ({ route, navigation }) => {
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Icon name="arrow-back-ios" size={20} color="#000000" />
+          <Icon name="arrow-back" size={20} color="#000000" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Medications</Text>
       </View>
@@ -123,8 +124,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     backgroundColor: '#F3F5F9',
+    marginTop: 40,
   },
   backButton: {
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(2, 1, 1, 0.2)',
     padding: 8,
   },
   headerTitle: {

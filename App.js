@@ -44,6 +44,14 @@ const HomeStack = () => {
         name="WellnessAIChatbot" 
         component={WellnessAIChatbotScreen} 
       />
+      <Stack.Screen
+        name="AddMedication"
+        component={AddMedicationScreen}
+      />
+      <Stack.Screen
+        name="MedicationSchedule"
+        component={MedicationScheduleScreen}
+      />
       {/* Add other screens accessible from Home here */}
     </Stack.Navigator>
   );

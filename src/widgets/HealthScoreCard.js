@@ -7,17 +7,19 @@ const HealthScoreCard = () => {
     <View>
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Health Score</Text>
-        <Icon name="more-horiz" size={24} color="#000000" />
+        <Icon name="more-horiz" size={24} color="#9E9E9E" />
       </View>
       <View style={styles.card}>
-        <View style={styles.scoreBox}>
-          <Text style={styles.scoreText}>88</Text>
-        </View>
-        <View style={styles.scoreInfo}>
-          <Text style={styles.scoreTitle}>Asklepios Score</Text>
-          <Text style={styles.scoreDescription}>
-            Asklepios predicts, optimize your health with our AI-driven insights
-          </Text>
+        <View style={styles.cardContent}>
+          <View style={styles.scoreBox}>
+            <Text style={styles.scoreText}>88</Text>
+          </View>
+          <View style={styles.scoreInfo}>
+            <Text style={styles.scoreTitle}>Medimate Score</Text>
+            <Text style={styles.scoreDescription}>
+              Based on the data, we think your health status is above average.
+            </Text>
+          </View>
         </View>
       </View>
     </View>
@@ -34,6 +36,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#333',
   },
   card: {
     backgroundColor: '#FFFFFF',
@@ -45,10 +48,14 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
+  cardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   scoreBox: {
-    width: 80,
-    height: 80,
-    backgroundColor: '#9C27B0',
+    width: 100,
+    height: 100,
+    backgroundColor: '#8A3FFC',
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
@@ -63,13 +70,15 @@ const styles = StyleSheet.create({
     marginLeft: 16,
   },
   scoreTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 8,
   },
   scoreDescription: {
     fontSize: 14,
     color: '#9E9E9E',
-    marginTop: 4,
+    lineHeight: 20,
   },
 });
 
