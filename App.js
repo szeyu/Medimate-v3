@@ -20,6 +20,7 @@ import WellnessAIChatbotScreen from './src/screens/WellnessAIChatbotScreen';
 import PillTakenScreen from './src/screens/PillTakenScreen';
 import ScanScreen from './src/screens/ScanScreen';
 import ScanMedicationScreen from './src/screens/ScanMedicationScreen';
+import MedicationDescriptionScreen from './src/screens/MedicationDescriptionScreen';
 
 // Import providers
 import { MedicationProvider } from './src/providers/MedicationProvider';
@@ -66,7 +67,11 @@ const HomeStack = () => {
         component={PillTakenScreen}
         options={{ headerShown: false }}
       />
-      {/* Add other screens accessible from Home here */}
+      <Stack.Screen
+        name="MedicationDescription"
+        component={MedicationDescriptionScreen}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 };
@@ -126,6 +131,11 @@ const MedicationStack = () => {
       <Stack.Screen 
         name="HomeScreen" 
         component={HomeScreen} 
+      />
+      <Stack.Screen
+        name="MedicationDescription"
+        component={MedicationDescriptionScreen}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );

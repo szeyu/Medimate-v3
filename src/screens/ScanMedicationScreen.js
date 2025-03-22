@@ -80,7 +80,7 @@ const ScanMedicationScreen = ({ navigation }) => {
       </View>
       <TouchableOpacity
         style={styles.addButton}
-        onPress={() => navigation.navigate('AddMedication')}
+        onPress={() => navigation.navigate('MedicationDescription')}
       >
         <Text style={styles.seeDetailsButtonText}>See Details</Text>
         <Icon name="arrow-forward" size={24} color="#FFFFFF" />
