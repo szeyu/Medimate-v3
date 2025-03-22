@@ -66,6 +66,10 @@
       <string>UIInterfaceOrientationLandscapeLeft</string>
       <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
+    <key>NSCameraUsageDescription</key>
+    <string>We need access to your camera to scan medication barcodes</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>This app does not require access to the microphone</string>
     <key>UIUserInterfaceStyle</key>
     <string>Light</string>
     <key>UIViewControllerBasedStatusBarAppearance</key>
