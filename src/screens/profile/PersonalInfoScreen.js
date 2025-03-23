@@ -13,12 +13,12 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const PersonalInfoScreen = ({ navigation }) => {
-  const [fullName, setFullName] = useState('Sanae Dekomoril');
-  const [email, setEmail] = useState('dekomoril@fuwa.jp');
-  const [phone, setPhone] = useState('+123 456 789');
-  const [dob, setDob] = useState('12/05/2005');
-  const [address, setAddress] = useState('Nevada Street 132');
-  const [country, setCountry] = useState('Japan');
+  const [fullName, setFullName] = useState('SSYOK');
+  const [email, setEmail] = useState('guest1@gmail.com');
+  const [phone, setPhone] = useState('+60123456789');
+  const [dob, setDob] = useState('12/05/2004');
+  const [address, setAddress] = useState('Universiti Malaya');
+  const [country, setCountry] = useState('Malaysia');
 
   return (
     <SafeAreaView style={styles.container}>
