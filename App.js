@@ -22,6 +22,7 @@ import ScanScreen from './src/screens/ScanScreen';
 import ScanMedicationScreen from './src/screens/ScanMedicationScreen';
 import MedicationDescriptionScreen from './src/screens/MedicationDescriptionScreen';
 import VoiceAssistanceScreen from './src/screens/VoiceAssistanceScreen';
+import TranscribeAIScreen from './src/screens/TranscribeAIScreen';
 
 // Import providers
 import { MedicationProvider } from './src/providers/MedicationProvider';
@@ -76,6 +77,10 @@ const HomeStack = () => {
       <Stack.Screen 
         name="VoiceAssistance" 
         component={VoiceAssistanceScreen} 
+      />
+      <Stack.Screen 
+        name="TranscribeAI" 
+        component={TranscribeAIScreen} 
       />
       {/* Add other screens accessible from Home here */}
     </Stack.Navigator>

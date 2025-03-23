@@ -23,7 +23,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import MaterialComIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 import WellnessAIChatbotCard from '../widgets/WellnessAIChatbotCard';
 import MedicationManagementCard from '../widgets/MedicationManagementCard';
-
+import TranscribeAICard from '../widgets/TranscribeAICard';
 const bloodPressureCard = require('../../assets/blood-pressure-card.png');
 const heartRateCard = require('../../assets/heart-rate-card.png');
 const sleepCard = require('../../assets/sleep-card.png');
@@ -214,6 +214,8 @@ const HomeScreen = ({ navigation }) => {
         <FitnessTrackerCard />
         <View style={styles.spacer} />
         <WellnessAIChatbotCard />
+        <View style={styles.spacer} />
+        <TranscribeAICard />
         <View style={styles.spacer} />
         {/* <MedicationManagement navigation={navigation} /> */}
         <MedicationManagementCard navigation={navigation} />

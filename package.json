@@ -10,12 +10,12 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@11labs/react": "^0.0.8",
     "@ant-design/react-native": "^5.3.2",
+    "@expo/metro-runtime": "^4.0.1",
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/react-native-fontawesome": "^0.3.2",
-    "@11labs/react": "^0.0.8",
-    "@expo/metro-runtime": "^4.0.1",
     "@react-native-community/cli": "latest",
     "@react-native-community/datetimepicker": "^8.3.0",
     "@react-native-community/slider": "^4.5.6",
