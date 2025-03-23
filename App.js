@@ -32,6 +32,7 @@ import LanguageSettingsScreen from './src/screens/profile/LanguageSettingsScreen
 import AboutScreen from './src/screens/profile/AboutScreen';
 import HelpCenterScreen from './src/screens/profile/HelpCenterScreen';
 import ContactUsScreen from './src/screens/profile/ContactUsScreen';
+import NotificationScreen from './src/screens/NotificationScreen';
 
 // Import providers
 import { MedicationProvider } from './src/providers/MedicationProvider';
@@ -90,6 +91,10 @@ const HomeStack = () => {
       <Stack.Screen 
         name="TranscribeAI" 
         component={TranscribeAIScreen} 
+      />
+      <Stack.Screen 
+        name="NotificationScreen" 
+        component={NotificationScreen} 
       />
       {/* Add other screens accessible from Home here */}
     </Stack.Navigator>

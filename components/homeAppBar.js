@@ -2,11 +2,15 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity, StatusBar, StyleSheet, TextInput } from 'react-native';
 import { Ionicons, MaterialIcons, FontAwesome } from '@expo/vector-icons';
 
-const HomeAppBar = ({ navigation, username = "Guest 1" }) => {
+const HomeAppBar = ({ navigation, username = "SSYOK" }) => {
   // Get current date
   const today = new Date();
   const options = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
   const formattedDate = today.toLocaleDateString('en-US', options).replace(',', '');
+
+  const handleNotificationPress = () => {
+    navigation.navigate('NotificationScreen');
+  };
 
   return (
     <>
@@ -56,8 +60,14 @@ const HomeAppBar = ({ navigation, username = "Guest 1" }) => {
         </View>
 
         {/* Notification Bell */}
-        <TouchableOpacity style={styles.notificationButton}>
+        <TouchableOpacity 
+          style={styles.notificationButton}
+          onPress={handleNotificationPress}
+        >
           <Ionicons name="notifications" size={24} color="white" />
+          <View style={styles.notificationBadge}>
+            <Text style={styles.badgeText}>3</Text>
+          </View>
         </TouchableOpacity>
       </View>
     </>
@@ -65,7 +75,7 @@ const HomeAppBar = ({ navigation, username = "Guest 1" }) => {
 };
 
 const styles = StyleSheet.create({
-appBar: {
+  appBar: {
     backgroundColor: '#242E49',
     paddingTop: 60,
     paddingBottom: 20,
@@ -78,7 +88,7 @@ appBar: {
     width: '100%',
     height: 260,
     
-},
+  },
   dateContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -168,6 +178,22 @@ appBar: {
     padding: 10,
     borderRadius: 15,
     zIndex: 1,
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    backgroundColor: '#FF4757',
+    borderRadius: 10,
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
 });
 
