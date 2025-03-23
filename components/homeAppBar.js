@@ -66,7 +66,7 @@ const HomeAppBar = ({ navigation, username = "SSYOK" }) => {
         >
           <Ionicons name="notifications" size={24} color="white" />
           <View style={styles.notificationBadge}>
-            <Text style={styles.badgeText}>3</Text>
+            <Text style={styles.badgeText}>2</Text>
           </View>
         </TouchableOpacity>
       </View>
