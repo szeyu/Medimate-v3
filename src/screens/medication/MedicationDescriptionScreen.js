@@ -7,7 +7,7 @@ import {
   ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import MedicationDescriptionAppBar from '../../components/medicationDescriptionAppBar';
+import MedicationDescriptionAppBar from '../../../components/medicationDescriptionAppBar';
 import { BarChart } from 'react-native-gifted-charts';
 import { Ionicons } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
@@ -214,7 +214,7 @@ const MedicationDescriptionScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F3F5F9',
   },
   backButton: {
     width: 40,

@@ -1,15 +1,18 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const HealthScoreCard = () => {
+  const navigation = useNavigation();
   return (
     <View>
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Health Score</Text>
         <Icon name="more-horiz" size={24} color="#9E9E9E" />
       </View>
-      <View style={styles.card}>
+      <TouchableOpacity style={styles.card} 
+        onPress={() => navigation.navigate('HealthScore')} >
         <View style={styles.cardContent}>
           <View style={styles.scoreBox}>
             <Text style={styles.scoreText}>88</Text>
@@ -21,7 +24,7 @@ const HealthScoreCard = () => {
             </Text>
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
     </View>
   );
 };

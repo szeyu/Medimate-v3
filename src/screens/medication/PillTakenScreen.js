@@ -10,9 +10,9 @@ import {
   ActivityIndicator
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { useMedications } from '../providers/MedicationProvider';
+import { useMedications } from '../../providers/MedicationProvider';
 
-const MedicationScreen = ({ navigation }) => {
+const PillTakenScreen = ({ navigation }) => {
   const { medications, isLoading } = useMedications();
 
   const renderMedicationCard = ({ item }) => (
@@ -46,28 +46,21 @@ const MedicationScreen = ({ navigation }) => {
     <View style={styles.emptyContainer}>
       <View style={styles.emptyImageContainer}>
         <Image
-          source={require('../../assets/medi_management.png')}
+          source={require('../../../assets/TakingPills.png')}
           style={styles.emptyImage}
           resizeMode="contain"
         />
       </View>
-      <Text style={styles.emptyTitle}>No Medications!</Text>
+      <Text style={styles.emptyTitle}>You Took Amoxiciline.</Text>
       <Text style={styles.emptyDescription}>
-        You have 0 medications setup. Kindly setup a new one!
+        You have taken 500mg of Amoxiciline for today. Congratulations! 
       </Text>
       <TouchableOpacity
         style={styles.addButton}
-        onPress={() => navigation.navigate('AddMedication')}
+        onPress={() => navigation.navigate('HomeScreen')}
       >
-        <Text style={styles.addButtonText}>Add Medication</Text>
-        <Icon name="add" size={24} color="#FFFFFF" />
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.scanButton}
-        onPress={() => navigation.navigate('Scan')}
-      >
-        <Text style={styles.scanButtonText}>Scan</Text>
-        <Icon name="qr-code" size={24} color="#FFFFFF" />
+        <Text style={styles.addButtonText}>Great, Thanks</Text>
+        <Icon name="check" size={24} color="#FFFFFF" />
       </TouchableOpacity>
     </View>
   );
@@ -77,7 +70,7 @@ const MedicationScreen = ({ navigation }) => {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => navigation.navigate('Home')}
+          onPress={() => navigation.navigate('MedicationSchedule')}
         >
           <Icon name="arrow-back" size={20} color="#000000" />
         </TouchableOpacity>
@@ -201,11 +194,11 @@ const styles = StyleSheet.create({
     borderRadius: 100,
   },
   emptyImage: {
-    width: 300,
-    height: 300,
+    width: 320,
+    height: 320,
   },
   emptyTitle: {
-    fontSize: 32,
+    fontSize: 30,
     fontWeight: 'bold',
     marginTop: 48,
     color: '#333333',
@@ -216,7 +209,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 8,
     marginBottom: 24,
-    maxWidth: '80%',
+    maxWidth: '100%',
   },
   addButton: {
     flexDirection: 'row',
@@ -258,4 +251,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MedicationScreen;
+export default PillTakenScreen;

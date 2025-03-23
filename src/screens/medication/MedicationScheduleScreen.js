@@ -162,7 +162,7 @@ const MedicationScheduleScreen = ({ route, navigation }) => {
           <View style={styles.modalContainer}>
             {/* Pill Image */}
             <View style={styles.pillImageContainer}>
-              <Image source={require('../../assets/MedicationPill.png')} style={styles.pillImage} />
+              <Image source={require('../../../assets/MedicationPill.png')} style={styles.pillImage} />
             </View>
             
             {/* Medication Details */}
