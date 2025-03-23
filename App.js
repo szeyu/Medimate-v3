@@ -23,7 +23,15 @@ import ScanMedicationScreen from './src/screens/ScanMedicationScreen';
 import MedicationDescriptionScreen from './src/screens/MedicationDescriptionScreen';
 import VoiceAssistanceScreen from './src/screens/VoiceAssistanceScreen';
 import TranscribeAIScreen from './src/screens/TranscribeAIScreen';
-import ProfileScreen from './src/screens/ProfileScreen';
+import ProfileScreen from './src/screens/ProfileSettingsScreen';
+import PersonalInfoScreen from './src/screens/profile/PersonalInfoScreen';
+import NotificationSettingsScreen from './src/screens/profile/NotificationSettingsScreen';
+import PreferencesScreen from './src/screens/profile/PreferencesScreen';
+import SecurityScreen from './src/screens/profile/SecurityScreen';
+import LanguageSettingsScreen from './src/screens/profile/LanguageSettingsScreen';
+import AboutScreen from './src/screens/profile/AboutScreen';
+import HelpCenterScreen from './src/screens/profile/HelpCenterScreen';
+import ContactUsScreen from './src/screens/profile/ContactUsScreen';
 
 // Import providers
 import { MedicationProvider } from './src/providers/MedicationProvider';
@@ -165,6 +173,38 @@ const ProfileStack = () => {
       <Stack.Screen 
         name="ProfileScreen" 
         component={ProfileScreen} 
+      />
+      <Stack.Screen 
+        name="PersonalInfo" 
+        component={PersonalInfoScreen} 
+      />
+      <Stack.Screen 
+        name="NotificationSettings" 
+        component={NotificationSettingsScreen} 
+      />
+      <Stack.Screen 
+        name="Preferences" 
+        component={PreferencesScreen} 
+      />
+      <Stack.Screen 
+        name="Security" 
+        component={SecurityScreen} 
+      />
+      <Stack.Screen 
+        name="LanguageSettings" 
+        component={LanguageSettingsScreen} 
+      />
+      <Stack.Screen 
+        name="About" 
+        component={AboutScreen} 
+      />
+      <Stack.Screen 
+        name="HelpCenter" 
+        component={HelpCenterScreen} 
+      />
+      <Stack.Screen 
+        name="ContactUs" 
+        component={ContactUsScreen} 
       />
     </Stack.Navigator>
   );

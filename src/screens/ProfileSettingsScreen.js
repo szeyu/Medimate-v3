@@ -58,14 +58,17 @@ const ProfileScreen = ({ navigation }) => {
       </View>
       
       <ScrollView style={styles.scrollView}>
-        <TouchableOpacity style={styles.profileCard}>
+        <TouchableOpacity 
+          style={styles.profileCard}
+          onPress={() => navigation.navigate('PersonalInfo')}
+        >
           <Image 
             source={{ uri: 'https://randomuser.me/api/portraits/women/44.jpg' }} 
             style={styles.profileImage} 
           />
           <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>Dekomoril Sanae</Text>
-            <Text style={styles.profileEmail}>dekomoril@fuwa.jp</Text>
+            <Text style={styles.profileName}>Dekomori Sanae</Text>
+            <Text style={styles.profileEmail}>dekomori@fuwa.jp</Text>
           </View>
           <Icon name="edit" size={20} color="#1167FE" />
         </TouchableOpacity>
@@ -76,10 +79,10 @@ const ProfileScreen = ({ navigation }) => {
             <Icon name="more-horiz" size={20} color="#CCCCCC" />
           </View>
           
-          {renderSettingItem('person', 'Personal Info', false, () => {})}
-          {renderSettingItem('notifications', 'Notification', false, () => {})}
-          {renderSettingItem('settings', 'Preferences', false, () => {})}
-          {renderSettingItem('security', 'Security', false, () => {})}
+          {renderSettingItem('person', 'Personal Info', false, () => navigation.navigate('PersonalInfo'))}
+          {renderSettingItem('notifications', 'Notification', false, () => navigation.navigate('NotificationSettings'))}
+          {renderSettingItem('settings', 'Preferences', false, () => navigation.navigate('Preferences'))}
+          {renderSettingItem('security', 'Security', false, () => navigation.navigate('Security'))}
         </View>
         
         <View style={styles.section}>
@@ -88,8 +91,8 @@ const ProfileScreen = ({ navigation }) => {
             <Icon name="more-horiz" size={20} color="#CCCCCC" />
           </View>
           
-          {renderSettingItem('language', 'Language', false, () => {})}
-          {renderSettingItem('dark-mode', 'Dark Mode', true, () => {})}
+          {renderSettingItem('language', 'Language', false, () => navigation.navigate('LanguageSettings'))}
+          {renderSettingItem('visibility', 'Dark Mode', true)}
         </View>
         
         <View style={styles.section}>
@@ -98,9 +101,9 @@ const ProfileScreen = ({ navigation }) => {
             <Icon name="more-horiz" size={20} color="#CCCCCC" />
           </View>
           
-          {renderSettingItem('info', 'About', false, () => {})}
-          {renderSettingItem('help', 'Help Center', false, () => {})}
-          {renderSettingItem('phone-iphone', 'Contact Us', false, () => {})}
+          {renderSettingItem('info', 'About', false, () => navigation.navigate('About'))}
+          {renderSettingItem('help', 'Help Center', false, () => navigation.navigate('HelpCenter'))}
+          {renderSettingItem('contact-support', 'Contact Us', false, () => navigation.navigate('ContactUs'))}
         </View>
         
         <View style={styles.section}>
@@ -109,16 +112,22 @@ const ProfileScreen = ({ navigation }) => {
             <Icon name="more-horiz" size={20} color="#CCCCCC" />
           </View>
           
-          {renderSettingItem('logout', 'Sign Out', false, () => {})}
+          {renderSettingItem('logout', 'Sign Out', false, () => {
+            // Handle sign out logic here
+            alert('Signing out...');
+          })}
         </View>
         
         <View style={styles.dangerSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.dangerTitle}>Danger Zone</Text>
-            <Icon name="warning" size={20} color="#FF5252" />
-          </View>
+          <Text style={styles.dangerTitle}>Danger Zone</Text>
           
-          <TouchableOpacity style={styles.deleteAccountButton}>
+          <TouchableOpacity 
+            style={styles.deleteAccountButton}
+            onPress={() => {
+              // Handle delete account logic here
+              alert('This will permanently delete your account. Are you sure?');
+            }}
+          >
             <View style={styles.deleteIconContainer}>
               <Icon name="delete" size={20} color="#FFFFFF" />
             </View>
@@ -160,12 +169,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#1167FE',
     borderRadius: 12,
     padding: 16,
-    marginBottom: 24,
+    marginBottom: 16,
   },
   profileImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     borderWidth: 2,
     borderColor: '#FFFFFF',
   },
@@ -181,7 +190,7 @@ const styles = StyleSheet.create({
   },
   profileEmail: {
     fontSize: 14,
-    color: '#E0E0FF',
+    color: '#E6F0FF',
   },
   section: {
     backgroundColor: '#FFFFFF',
@@ -198,7 +207,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 8,
   },
   sectionTitle: {
     fontSize: 16,
