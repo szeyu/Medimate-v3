@@ -23,6 +23,7 @@ import ScanMedicationScreen from './src/screens/ScanMedicationScreen';
 import MedicationDescriptionScreen from './src/screens/MedicationDescriptionScreen';
 import VoiceAssistanceScreen from './src/screens/VoiceAssistanceScreen';
 import TranscribeAIScreen from './src/screens/TranscribeAIScreen';
+import ProfileScreen from './src/screens/ProfileScreen';
 
 // Import providers
 import { MedicationProvider } from './src/providers/MedicationProvider';
@@ -87,6 +88,7 @@ const HomeStack = () => {
   );
 };
 
+// Create a stack navigator for the Medication tab
 const MedicationStack = () => {
   return (
     <Stack.Navigator 
@@ -152,6 +154,22 @@ const MedicationStack = () => {
   );
 };
 
+// Create a stack navigator for the Profile tab
+const ProfileStack = () => {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false
+      }}
+    >
+      <Stack.Screen 
+        name="ProfileScreen" 
+        component={ProfileScreen} 
+      />
+    </Stack.Navigator>
+  );
+};
+
 const App = () => {
   return (
     <SafeAreaProvider>
@@ -185,7 +203,7 @@ const App = () => {
             <Tab.Screen name="Stats" component={HomeScreen} />
             <Tab.Screen name="Add" component={HomeScreen} options={{ tabBarLabel: '',}}  />
             <Tab.Screen name="Medications" component={MedicationStack}/>
-            <Tab.Screen name="Profile" component={HomeScreen} />
+            <Tab.Screen name="Profile" component={ProfileStack} />
           </Tab.Navigator>
         </NavigationContainer>
       </MedicationProvider>
