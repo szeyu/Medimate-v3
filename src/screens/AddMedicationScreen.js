@@ -15,6 +15,9 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import CustomAppBar from '../../components/customAppBar';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Slider from '@react-native-community/slider';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import Feather from 'react-native-vector-icons/Feather';
 
 const AddMedicationScreen = ({ navigation }) => {
   const [name, setName] = useState('');
@@ -35,10 +38,11 @@ const AddMedicationScreen = ({ navigation }) => {
 
 
   const medicationStyles = [
-    { icon: 'favorite', color: '#FFFFFF', bg: '#8B5CF6' },
-    { icon: 'directions-car', color: '#FFFFFF', bg: '#64748B' },
-    { icon: 'flash-on', color: '#000000', bg: '#F3F4F6' },
-    { icon: 'wb-sunny', color: '#000000', bg: '#F3F4F6' },
+    { icon: 'favorite', color: '#000000', bg: '#F3F4F6'},
+    { icon: 'medical-services', color: '#000000', bg: '#F3F4F6'},
+    { type: 'fontawesome', icon: faPlus, color: '#000000', bg: '#F3F4F6' },
+    { icon: 'flash-on', color: '#000000', bg: '#F3F4F6'},
+    { type: 'feather', icon: 'more-horizontal', color: '#000000', bg: '#F3F4F6' },
   ];
 
   const [sliderWidth, setSliderWidth] = useState(0);
@@ -371,12 +375,30 @@ const AddMedicationScreen = ({ navigation }) => {
                 key={index}
                 style={[
                   styles.styleOption,
-                  { backgroundColor: style.bg },
+                  { backgroundColor: selectedStyle === index ? '#893FFC' : style.bg },
                   selectedStyle === index && styles.styleOptionSelected
                 ]}
                 onPress={() => setSelectedStyle(index)}
               >
-                <Icon name={style.icon} size={24} color={style.color} />
+                {style.type === 'fontawesome' ? (
+                  <FontAwesomeIcon 
+                    icon={style.icon} 
+                    size={24} 
+                    color={selectedStyle === index ? '#FFFFFF' : style.color} 
+                  />
+                ) : style.type === 'feather' ? (
+                  <Feather
+                    name={style.icon} 
+                    size={24} 
+                    color={selectedStyle === index ? '#FFFFFF' : style.color} 
+                  />
+                ) : (
+                  <Icon 
+                    name={style.icon} 
+                    size={24} 
+                    color={selectedStyle === index ? '#FFFFFF' : style.color} 
+                  />
+                )}
               </TouchableOpacity>
             ))}
           </View>
@@ -415,9 +437,11 @@ const AddMedicationScreen = ({ navigation }) => {
           </Text>
         </View>
 
-        <TouchableOpacity style={styles.addButton}>
-          <Text style={styles.addButtonText}>Add Medication</Text>
-          <Icon name="add" size={20} color="#FFFFFF" />
+        <TouchableOpacity 
+          style={styles.addButton}
+          onPress={() => navigation.navigate('MedicationSchedule')}
+        >
+          <Text style={styles.addButtonText}>Save</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -506,21 +530,16 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontSize: 14,
   },
-  // dosageValue: {
-  //   fontSize: 16,
-  //   fontWeight: '600',
-  //   color: '#2563EB',
-  // },
   sliderFill: {
     height: '100%',
-    backgroundColor: '#2563EB',
+    backgroundColor: '#1167FE',
     borderRadius: 4,
   },
   seeAllButton: {
     alignSelf: 'flex-end',
   },
   seeAllText: {
-    color: '#2563EB',
+    color: '#1167FE',
     fontSize: 14,
     fontWeight: '500',
   },
@@ -591,7 +610,7 @@ const styles = StyleSheet.create({
   },
   mealOptionSelected: {
     backgroundColor: '#2563EB',
-    borderColor: '#2563EB',
+    borderColor: '#1167FE',
   },
   mealOptionText: {
     fontSize: 16,
@@ -614,7 +633,7 @@ const styles = StyleSheet.create({
   },
   styleOptionSelected: {
     borderWidth: 2,
-    borderColor: '#2563EB',
+    borderColor: '#D8C7FB',
   },
   instructionsContainer: {
     borderWidth: 1,
@@ -640,7 +659,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   addButton: {
-    backgroundColor: '#2563EB',
+    backgroundColor: '#1167FE',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',

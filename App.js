@@ -17,10 +17,16 @@ import MedicationDetailScreen from './src/screens/MedicationDetailScreen';
 import MedicationScheduleScreen from './src/screens/MedicationScheduleScreen';
 import TestGlucoseLevelScreen from './src/screens/TestGlucoseLevelScreen';
 import WellnessAIChatbotScreen from './src/screens/WellnessAIChatbotScreen';
+import PillTakenScreen from './src/screens/PillTakenScreen';
+import ScanScreen from './src/screens/ScanScreen';
+import ScanMedicationScreen from './src/screens/ScanMedicationScreen';
+import MedicationDescriptionScreen from './src/screens/MedicationDescriptionScreen';
 import VoiceAssistanceScreen from './src/screens/VoiceAssistanceScreen';
 
 // Import providers
 import { MedicationProvider } from './src/providers/MedicationProvider';
+import { Pill } from 'lucide-react-native';
+
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -44,6 +50,28 @@ const HomeStack = () => {
       <Stack.Screen 
         name="WellnessAIChatbot" 
         component={WellnessAIChatbotScreen} 
+      />
+      <Stack.Screen
+        name="AddMedication"
+        component={AddMedicationScreen}
+      />
+      <Stack.Screen
+        name="MedicationSchedule"
+        component={MedicationScheduleScreen}
+      />
+      <Stack.Screen
+        name="MedicationDetail"
+        component={MedicationDetailScreen}
+      />
+      <Stack.Screen
+        name="PillTaken"
+        component={PillTakenScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="MedicationDescription"
+        component={MedicationDescriptionScreen}
+        options={{ headerShown: false }}
       />
       <Stack.Screen 
         name="VoiceAssistance" 
@@ -89,6 +117,30 @@ const MedicationStack = () => {
       <Stack.Screen 
         name="MedicationSchedule" 
         component={MedicationScheduleScreen} 
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Scan"
+        component={ScanScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="PillTaken"
+        component={PillTakenScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ScanMedication"
+        component={ScanMedicationScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="HomeScreen" 
+        component={HomeScreen} 
+      />
+      <Stack.Screen
+        name="MedicationDescription"
+        component={MedicationDescriptionScreen}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

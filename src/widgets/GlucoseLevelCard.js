@@ -10,7 +10,7 @@ const GlucoseLevelCard = () => {
     <View>
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Glucose Level</Text>
-        <Icon name="more-horiz" size={24} color="#000000" />
+        <Icon name="more-horiz" size={24} color="#9E9E9E" />
       </View>
       <TouchableOpacity 
         style={[styles.card, styles.glucoseCard]} 
@@ -55,6 +55,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#333',
   },
   card: {
     backgroundColor: '#FFFFFF',
@@ -71,7 +72,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     borderLeftWidth: 4,
-    borderLeftColor: '#4CAF50',
+    borderLeftColor: '#00929D',
   },
   glucoseCardContent: {
     flex: 1,
@@ -79,7 +80,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   glucoseLevelContainer: {
-    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+    // backgroundColor: 'rgba(76, 175, 80, 0.1)',
+    backgroundColor: '#DAFBFC',
     borderRadius: 12,
     padding: 12,
     alignItems: 'center',
@@ -88,11 +90,11 @@ const styles = StyleSheet.create({
   glucoseLevelText: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#4CAF50',
+    color: '#00929D',
   },
   glucoseLevelUnit: {
     fontSize: 12,
-    color: '#4CAF50',
+    color: '#00929D',
     marginTop: 4,
   },
   glucoseLevelInfo: {
@@ -117,12 +119,12 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#00929D',
     marginRight: 6,
   },
   glucoseLevelStatusText: {
     fontSize: 12,
-    color: '#4CAF50',
+    color: '#00929D',
     fontWeight: '500',
   },
   glucoseCardArrow: {

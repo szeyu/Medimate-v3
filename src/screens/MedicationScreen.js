@@ -64,7 +64,7 @@ const MedicationScreen = ({ navigation }) => {
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.scanButton}
-        onPress={() => navigation.navigate('AddMedication')}
+        onPress={() => navigation.navigate('Scan')}
       >
         <Text style={styles.scanButtonText}>Scan</Text>
         <Icon name="qr-code" size={24} color="#FFFFFF" />
@@ -119,6 +119,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F5F5F5',
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(2, 1, 1, 0.2)',
   },
   listContainer: {
     padding: 16,
