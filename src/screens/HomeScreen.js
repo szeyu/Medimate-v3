@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -7,6 +7,8 @@ import {
   FlatList,
   Text,
   TouchableOpacity,
+  Alert,
+  Platform,
 } from 'react-native';
 import { ContributionGraph } from 'react-native-chart-kit';
 import { useNavigation } from '@react-navigation/native';
@@ -196,6 +198,34 @@ const renderCard = ({ item }) => (
 );
 
 const HomeScreen = ({ navigation }) => {
+  useEffect(() => {
+    // Set a timeout to show a medication reminder notification after 10 seconds
+    const notificationTimer = setTimeout(() => {
+      showMedicationReminder();
+    }, 10000); // 10 seconds
+
+    // Clean up the timer when component unmounts
+    return () => clearTimeout(notificationTimer);
+  }, []);
+
+  const showMedicationReminder = () => {
+    // Show an alert that simulates a notification
+    Alert.alert(
+      "Medication Reminder",
+      "It's time to take your Losartan medication.",
+      [
+        {
+          text: "Skip",
+          style: "cancel"
+        },
+        { 
+          text: "Take Now", 
+          onPress: () => navigation.navigate('MedicationSchedule')
+        }
+      ]
+    );
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
