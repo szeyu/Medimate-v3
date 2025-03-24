@@ -265,6 +265,10 @@ const AIStack = () => {
         name="AiHealthSuggestion"
         component={AiHealthSuggestionScreen}
       />
+      <Stack.Screen
+        name="NutritionGuidance"
+        component={NutritionGuidanceScreen}
+      />
     </Stack.Navigator>
   );
 };
