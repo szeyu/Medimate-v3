@@ -29,16 +29,23 @@ const MedicationScreen = ({ navigation, route }) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const scrollY = useRef(new Animated.Value(0)).current;
   
-  // Animation values for each medication card
-  const [animatedValues] = useState(() => 
-    medications.map(() => new Animated.Value(0))
-  );
+  // Create a ref to store animated values
+  const animatedValuesRef = useRef({});
   
-  // Staggered animation for medication cards on mount
+  // Update animated values when medications change
   useEffect(() => {
-    if (!isLoading) {
-      const animations = animatedValues.map((anim, index) => {
-        return Animated.timing(anim, {
+    // Create new animated values for any new medications
+    medications.forEach((med) => {
+      if (!animatedValuesRef.current[med.id]) {
+        animatedValuesRef.current[med.id] = new Animated.Value(0);
+      }
+    });
+    
+    // Start animations for new medications
+    const newAnimations = medications
+      .filter(med => animatedValuesRef.current[med.id].__getValue() === 0)
+      .map((med, index) => {
+        return Animated.timing(animatedValuesRef.current[med.id], {
           toValue: 1,
           duration: 600,
           delay: index * 150,
@@ -46,10 +53,11 @@ const MedicationScreen = ({ navigation, route }) => {
           easing: Easing.bezier(0.25, 0.1, 0.25, 1),
         });
       });
-      
-      Animated.stagger(100, animations).start();
+    
+    if (newAnimations.length > 0) {
+      Animated.stagger(100, newAnimations).start();
     }
-  }, [isLoading, medications.length]);
+  }, [medications]);
   
   // Floating animation for cards
   const floatingAnimation = useRef(new Animated.Value(0)).current;
@@ -87,18 +95,21 @@ const MedicationScreen = ({ navigation, route }) => {
   });
 
   const renderMedicationItem = ({ item, index }) => {
+    // Get the animation value for this medication
+    const animValue = animatedValuesRef.current[item.id] || new Animated.Value(1);
+    
     // Animation values for this specific card
-    const translateY = animatedValues[index].interpolate({
+    const translateY = animValue.interpolate({
       inputRange: [0, 1],
       outputRange: [50, 0],
     });
     
-    const opacity = animatedValues[index].interpolate({
+    const opacity = animValue.interpolate({
       inputRange: [0, 1],
       outputRange: [0, 1],
     });
     
-    const scale = animatedValues[index].interpolate({
+    const scale = animValue.interpolate({
       inputRange: [0, 1],
       outputRange: [0.8, 1],
     });
@@ -189,7 +200,7 @@ const MedicationScreen = ({ navigation, route }) => {
             </Text>
           </TouchableOpacity>
           
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.checkboxContainer}
             onPress={() => {
               if (!item.isChecked) {
@@ -563,8 +574,8 @@ const styles = StyleSheet.create({
   },
   takenBadge: {
     position: 'absolute',
-    top: -8,
-    right: -8,
+    top: 4,
+    right: 4,
     backgroundColor: '#4CAF50',
     paddingHorizontal: 8,
     paddingVertical: 2,
