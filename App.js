@@ -11,16 +11,16 @@ enableScreens();
 
 // Import screens
 import HomeScreen from './src/screens/HomeScreen';
-import MedicationScreen from './src/screens/MedicationScreen';
-import AddMedicationScreen from './src/screens/AddMedicationScreen';
-import MedicationDetailScreen from './src/screens/MedicationDetailScreen';
-import MedicationScheduleScreen from './src/screens/MedicationScheduleScreen';
+import MedicationScreen from './src/screens/medication/MedicationScreen';
+import AddMedicationScreen from './src/screens/medication/AddMedicationScreen';
+import MedicationDetailScreen from './src/screens/medication/MedicationDetailScreen';
+import MedicationScheduleScreen from './src/screens/medication/MedicationScheduleScreen';
 import TestGlucoseLevelScreen from './src/screens/TestGlucoseLevelScreen';
 import WellnessAIChatbotScreen from './src/screens/WellnessAIChatbotScreen';
-import PillTakenScreen from './src/screens/PillTakenScreen';
-import ScanScreen from './src/screens/ScanScreen';
-import ScanMedicationScreen from './src/screens/ScanMedicationScreen';
-import MedicationDescriptionScreen from './src/screens/MedicationDescriptionScreen';
+import PillTakenScreen from './src/screens/medication/PillTakenScreen';
+import ScanScreen from './src/screens/medication/ScanScreen';
+import ScanMedicationScreen from './src/screens/medication/ScanMedicationScreen';
+import MedicationDescriptionScreen from './src/screens/medication/MedicationDescriptionScreen';
 import VoiceAssistanceScreen from './src/screens/VoiceAssistanceScreen';
 import TranscribeAIScreen from './src/screens/TranscribeAIScreen';
 import ProfileScreen from './src/screens/ProfileSettingsScreen';
@@ -32,6 +32,9 @@ import LanguageSettingsScreen from './src/screens/profile/LanguageSettingsScreen
 import AboutScreen from './src/screens/profile/AboutScreen';
 import HelpCenterScreen from './src/screens/profile/HelpCenterScreen';
 import ContactUsScreen from './src/screens/profile/ContactUsScreen';
+import HealthScoreScreen from './src/screens/health/HealthScoreScreen';
+import AiHealthSuggestionScreen from './src/screens/health/AiHealthSuggestionScreen';
+import NutritionGuidanceScreen from './src/screens/health/NutritionGuidanceScreen';
 import NotificationScreen from './src/screens/NotificationScreen';
 
 // Import providers
@@ -91,6 +94,18 @@ const HomeStack = () => {
       <Stack.Screen 
         name="TranscribeAI" 
         component={TranscribeAIScreen} 
+      />
+      <Stack.Screen
+        name="HealthScore"
+        component={HealthScoreScreen}
+      />
+      <Stack.Screen
+        name="AIHealthSuggestion"
+        component={AiHealthSuggestionScreen}
+      />
+      <Stack.Screen
+        name="NutritionGuidance"
+        component={NutritionGuidanceScreen}
       />
       <Stack.Screen 
         name="NotificationScreen" 

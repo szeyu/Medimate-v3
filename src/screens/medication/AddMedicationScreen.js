@@ -12,7 +12,7 @@ import {
   FlatList,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import CustomAppBar from '../../components/customAppBar';
+import CustomAppBar from '../../../components/customAppBar';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Slider from '@react-native-community/slider';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
@@ -451,7 +451,7 @@ const AddMedicationScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F3F5F9',
   },
   header: {
     flexDirection: 'row',

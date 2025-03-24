@@ -7,18 +7,18 @@ import {
   FlatList,
   Image,
   SafeAreaView,
-  ActivityIndicator
+  ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { useMedications } from '../providers/MedicationProvider';
+import { useMedications } from '../../providers/MedicationProvider';
 
-const PillTakenScreen = ({ navigation }) => {
+const ScanMedicationScreen = ({ navigation }) => {
   const { medications, isLoading } = useMedications();
 
   const renderMedicationCard = ({ item }) => (
     <TouchableOpacity
       style={styles.medicationCard}
-      onPress={() => navigation.navigate('MedicationDetail', { medication: item })}
+      onPress={() => navigation.navigate('Scan')}
     >
       <View style={styles.cardContent}>
         <View style={styles.medicationIcon}>
@@ -46,21 +46,44 @@ const PillTakenScreen = ({ navigation }) => {
     <View style={styles.emptyContainer}>
       <View style={styles.emptyImageContainer}>
         <Image
-          source={require('../../assets/TakingPills.png')}
+          source={require('../../../assets/scannedMedication.png')}
           style={styles.emptyImage}
           resizeMode="contain"
         />
       </View>
-      <Text style={styles.emptyTitle}>You Took Amoxiciline.</Text>
+      <Text style={styles.emptyTitle}>Amoxiciline</Text>
       <Text style={styles.emptyDescription}>
-        You have taken 500mg of Amoxiciline for today. Congratulations! 
+        Successfully analyzed !!
       </Text>
+      {/* Medication Info Icons */}
+      <View style={styles.medicationInfoContainer}>
+        <View style={styles.infoItem}>
+          <View style={[styles.infoIcon, { backgroundColor: '#242E49' }]}>
+            <Icon name="warning" size={24} color="#FFFFFF" />
+          </View>
+          <Text style={styles.infoText}>High Risk</Text>
+        </View>
+        
+        <View style={styles.infoItem}>
+          <View style={[styles.infoIcon, { backgroundColor: '#FA4E5E' }]}>
+            <Icon name="shield" size={24} color="#FFFFFF" />
+          </View>
+          <Text style={styles.infoText}>Antibiotic</Text>
+        </View>
+        
+        <View style={styles.infoItem}>
+          <View style={[styles.infoIcon, { backgroundColor: '#893FFC' }]}>
+            <Icon name="schedule" size={24} color="#FFFFFF" />
+          </View>
+          <Text style={styles.infoText}>2× Daily</Text>
+        </View>
+      </View>
       <TouchableOpacity
         style={styles.addButton}
-        onPress={() => navigation.navigate('HomeScreen')}
+        onPress={() => navigation.navigate('MedicationDescription')}
       >
-        <Text style={styles.addButtonText}>Great, Thanks</Text>
-        <Icon name="check" size={24} color="#FFFFFF" />
+        <Text style={styles.seeDetailsButtonText}>See Details</Text>
+        <Icon name="arrow-forward" size={24} color="#FFFFFF" />
       </TouchableOpacity>
     </View>
   );
@@ -70,7 +93,7 @@ const PillTakenScreen = ({ navigation }) => {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => navigation.navigate('MedicationSchedule')}
+          onPress={() => navigation.navigate('Scan')}
         >
           <Icon name="arrow-back" size={20} color="#000000" />
         </TouchableOpacity>
@@ -194,11 +217,11 @@ const styles = StyleSheet.create({
     borderRadius: 100,
   },
   emptyImage: {
-    width: 320,
-    height: 320,
+    width: 300,
+    height: 300,
   },
   emptyTitle: {
-    fontSize: 30,
+    fontSize: 32,
     fontWeight: 'bold',
     marginTop: 48,
     color: '#333333',
@@ -209,7 +232,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 8,
     marginBottom: 24,
-    maxWidth: '100%',
+    maxWidth: '80%',
   },
   addButton: {
     flexDirection: 'row',
@@ -232,7 +255,7 @@ const styles = StyleSheet.create({
     width: '90%',
     marginTop: 20,
   },
-  addButtonText: {
+  seeDetailsButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
@@ -249,6 +272,29 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  medicationInfoContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    marginBottom: 30,
+  },
+  infoItem: {
+    alignItems: 'center',
+    width: '30%',
+  },
+  infoIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  infoText: {
+    fontSize: 14,
+    color: '#718096',
+    textAlign: 'center',
+  },
 });
 
-export default PillTakenScreen;
+export default ScanMedicationScreen;
