@@ -1,17 +1,32 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Animated } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 
 const UserHeader = ({ username = "SSYOK" }) => {
   const navigation = useNavigation();
+  const [isPressed, setIsPressed] = useState(false);
+  
+  // Handle the press with a slight delay
+  const handlePress = () => {
+    setIsPressed(true);
+    
+    // Add a slight delay before navigation
+    setTimeout(() => {
+      navigation.navigate('Profile');
+      setIsPressed(false);
+    }, 50); // 50ms delay for a natural feel
+  };
 
   return (
     <TouchableOpacity 
-      style={styles.userHeader}
-      activeOpacity={0.8}
-      onPress={() => navigation.navigate('Profile')}
+      style={[
+        styles.userHeader,
+        isPressed && styles.userHeaderPressed
+      ]}
+      activeOpacity={0.7}
+      onPress={handlePress}
     >
       <View style={styles.profileLeft}>
         <Image 
@@ -35,7 +50,12 @@ const UserHeader = ({ username = "SSYOK" }) => {
       </View>
       
       <View style={styles.rightIcons}>
-        <Ionicons name="chevron-forward" size={24} color="#FFFFFF" />
+        <Ionicons 
+          name="chevron-forward" 
+          size={24} 
+          color="#FFFFFF" 
+          style={isPressed && styles.arrowPressed}
+        />
       </View>
     </TouchableOpacity>
   );
@@ -50,6 +70,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 16,
+  },
+  userHeaderPressed: {
+    backgroundColor: '#253040', // Slightly darker when pressed
+    transform: [{ scale: 0.98 }], // Slight scale down effect
+  },
+  arrowPressed: {
+    transform: [{ translateX: 3 }], // Move arrow slightly right when pressed
   },
   profileLeft: {
     flexDirection: 'row',
