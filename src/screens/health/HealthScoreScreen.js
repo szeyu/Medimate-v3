@@ -69,7 +69,10 @@ const HealthScoreScreen = ({ navigation }) => {
       {/* Stats Cards */}
       <View style={styles.cardsContainer}>
         {/* Heart Rate Card */}
-        <View style={styles.card}>
+        <TouchableOpacity style={styles.card}
+          onPress={() => {
+            navigation.navigate('HeartRate');
+          }}>
           <View style={styles.cardTextContainer}>
             <Text style={styles.cardTitle}>Heart Rate</Text>
             <View style={styles.valueContainer}>
@@ -114,10 +117,13 @@ const HealthScoreScreen = ({ navigation }) => {
               style={styles.chart}
             />
           </View>
-        </View>
+        </TouchableOpacity>
         
         {/* Blood Pressure Card */}
-        <View style={styles.card}>
+        <TouchableOpacity style={styles.card}
+          onPress={() => {
+            navigation.navigate('BloodPressure');
+          }}>
           <View style={styles.cardTextContainer}>
             <Text style={styles.cardTitle}>Blood Pressure</Text>
             <View style={styles.valueContainer}>
@@ -162,7 +168,7 @@ const HealthScoreScreen = ({ navigation }) => {
               style={styles.chart}
             />
           </View>
-        </View>
+        </TouchableOpacity>
         
         {/* Sleep Card */}
         <View style={styles.card}>
