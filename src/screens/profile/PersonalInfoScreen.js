@@ -14,7 +14,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const PersonalInfoScreen = ({ navigation }) => {
   const [fullName, setFullName] = useState('SSYOK');
-  const [email, setEmail] = useState('guest1@gmail.com');
+  const [email, setEmail] = useState('ssyok@gmail.com');
   const [phone, setPhone] = useState('+60123456789');
   const [dob, setDob] = useState('12/05/2004');
   const [address, setAddress] = useState('Universiti Malaya');

@@ -574,8 +574,8 @@ const styles = StyleSheet.create({
   },
   takenBadge: {
     position: 'absolute',
-    top: 4,
-    right: 4,
+    top: 8,
+    right: 8,
     backgroundColor: '#4CAF50',
     paddingHorizontal: 8,
     paddingVertical: 2,

@@ -69,8 +69,8 @@ const ProfileScreen = ({ navigation }) => {
             style={styles.profileImage} 
           />
           <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>Guest 1</Text>
-            <Text style={styles.profileEmail}>guest1@gmail.com</Text>
+            <Text style={styles.profileName}>SSYOK</Text>
+            <Text style={styles.profileEmail}>ssyok@gmail.com</Text>
           </View>
           <Icon name="edit" size={20} color="#1167FE" />
         </TouchableOpacity>
