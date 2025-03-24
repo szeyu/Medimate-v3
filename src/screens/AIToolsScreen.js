@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import AiAppBar from '../../components/AiAppBar';
 
 const AIToolsScreen = ({ navigation }) => {
   // AI tools data
@@ -51,6 +52,15 @@ const AIToolsScreen = ({ navigation }) => {
       color: '#FFC107',
       screen: 'TranscribeAI',
     },
+    {
+      id: '5',
+      title: 'AI Health Guidance',
+      description: 'Get personalized health guidance from our AI-powered tools.',
+      icon: 'medical-services',
+      iconType: 'material',
+      color: '#6610F2',
+      screen: 'AiHealthSuggestion',
+    }
   ];
 
   const renderToolCard = (tool) => {
@@ -75,11 +85,12 @@ const AIToolsScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+    <ScrollView style={styles.container}>
+      {/* <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       <View style={styles.header}>
         <Text style={styles.headerTitle}>AI Health Tools</Text>
-      </View>
+      </View> */}
+      <AiAppBar navigation={navigation}/>
       
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer}>
         <View style={styles.bannerContainer}>
@@ -90,7 +101,8 @@ const AIToolsScreen = ({ navigation }) => {
             </Text>
           </View>
           <View style={styles.bannerIconContainer}>
-            <MaterialCommunityIcons name="robot" size={60} color="#FFFFFF" />
+            {/* <MaterialCommunityIcons name="robot" size={60} color="#FFFFFF" /> */}
+            <Image source={require('../../assets/chatbot-image.png')} style={styles.bannerIcon} />
           </View>
         </View>
         
@@ -100,7 +112,7 @@ const AIToolsScreen = ({ navigation }) => {
           {aiTools.map(tool => renderToolCard(tool))}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </ScrollView>
   );
 };
 
@@ -152,6 +164,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     opacity: 0.8,
     lineHeight: 20,
+    marginRight: 4,
   },
   bannerIconContainer: {
     width: 80,
@@ -160,6 +173,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  bannerIcon: {
+    height: 130,
+    width: 130,
+    paddingRight: 5,
+    marginTop: 23,
+    borderRadius: 15,
   },
   sectionTitle: {
     fontSize: 18,

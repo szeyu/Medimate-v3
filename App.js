@@ -261,6 +261,10 @@ const AIStack = () => {
         name="TranscribeAI" 
         component={TranscribeAIScreen} 
       />
+      <Stack.Screen
+        name="AiHealthSuggestion"
+        component={AiHealthSuggestionScreen}
+      />
     </Stack.Navigator>
   );
 };
@@ -277,7 +281,7 @@ function CustomTabBar({ state, descriptors, navigation }) {
   React.useEffect(() => {
     if (width === 0) return;
     
-    const tabWidth = width / 3;
+    const tabWidth = width / 5;
     // Calculate center position of each tab
     const targetPosition = tabWidth * state.index + (tabWidth / 2) - 30; // 30 is half the width of the circle
     
@@ -336,8 +340,12 @@ function CustomTabBar({ state, descriptors, navigation }) {
           let iconName;
           if (route.name === 'Home') {
             iconName = 'home';
+          } else if (route.name === 'Stats') {
+            iconName = 'bar-chart';
           } else if (route.name === 'AI') {
             iconName = 'smart-toy';
+          } else if (route.name === 'Medications') {
+            iconName = 'medication';
           } else if (route.name === 'Profile') {
             iconName = 'person';
           }
@@ -389,15 +397,26 @@ const App = () => {
             tabBar={props => <CustomTabBar {...props} />}
             screenOptions={{
               headerShown: false,
+              contentStyle: {
+                paddingBottom: 60,
+              },
             }}
           >
             <Tab.Screen 
               name="Home" 
               component={HomeStack} 
             />
+            <Tab.Screen
+              name="Stats"
+              component={HomeScreen}
+            />
             <Tab.Screen 
               name="AI" 
               component={AIStack} 
+            />
+            <Tab.Screen
+              name="Medications"
+              component={MedicationStack}
             />
             <Tab.Screen 
               name="Profile" 
@@ -412,7 +431,6 @@ const App = () => {
 
 const styles = StyleSheet.create({
   tabBarContainer: {
-    position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
@@ -436,7 +454,7 @@ const styles = StyleSheet.create({
   },
   activeTabCircleIndicator: {
     position: 'absolute',
-    top: -20,
+    top: -15,
     left: 0,
     width: 60,
     height: 60,
@@ -457,18 +475,18 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 10,
+    paddingTop: 5,
     zIndex: 1,
   },
   iconContainer: {
-    height: 30,
-    width: 30,
+    height: 24,
+    width: 24,
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 4,
   },
   tabLabel: {
     fontSize: 12,
-    marginTop: 4,
   },
 });
 

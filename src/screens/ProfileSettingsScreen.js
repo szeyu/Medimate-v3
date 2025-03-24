@@ -11,6 +11,7 @@ import {
   StatusBar,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import ProfileAppBar from '../../components/ProfileAppBar';
 
 const ProfileScreen = ({ navigation }) => {
   const [darkMode, setDarkMode] = React.useState(false);
@@ -46,16 +47,17 @@ const ProfileScreen = ({ navigation }) => {
   };
   
   return (
-    <SafeAreaView style={styles.container}>
+    <ScrollView style={styles.container}>
       <StatusBar backgroundColor="#FFFFFF" barStyle="dark-content" />
       
-      <View style={styles.header}>
+      {/* <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Icon name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Account</Text>
         <View style={{ width: 24 }} />
-      </View>
+      </View> */}
+      <ProfileAppBar navigation={navigation} />
       
       <ScrollView style={styles.scrollView}>
         <TouchableOpacity 
@@ -136,7 +138,7 @@ const ProfileScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </ScrollView>
   );
 };
 
