@@ -39,6 +39,9 @@ import AiHealthSuggestionScreen from './src/screens/health/AiHealthSuggestionScr
 import NutritionGuidanceScreen from './src/screens/health/NutritionGuidanceScreen';
 import NotificationScreen from './src/screens/NotificationScreen';
 import AIToolsScreen from './src/screens/AIToolsScreen';
+import BloodPressureScreen from './src/screens/metrics/BloodPressureScreen';
+import BloodPressureStatsScreen from './src/screens/metrics/BloodPressureStatsScreen';
+import HeartRateScreen from './src/screens/metrics/HeartRateScreen';
 import GetAssistanceScreen from './src/screens/medication/GetAssistanceScreen';
 
 // Import providers
@@ -114,6 +117,10 @@ const HomeStack = () => {
       <Stack.Screen 
         name="NotificationScreen" 
         component={NotificationScreen} 
+      />
+      <Stack.Screen
+        name="BloodPressure"
+        component={BloodPressureScreen}
       />
       <Stack.Screen
         name="GetAssistance"
@@ -280,6 +287,37 @@ const AIStack = () => {
   );
 };
 
+const HealthScoreStack = () => {
+  return (
+    <Stack.Navigator 
+      screenOptions={{
+        headerShown: false
+      }}
+    >
+      <Stack.Screen
+        name="HealthScore"
+        component={HealthScoreScreen}
+      />
+      <Stack.Screen
+        name="NutritionGuidance"
+        component={NutritionGuidanceScreen}
+      />
+      <Stack.Screen
+        name="BloodPressure"
+        component={BloodPressureScreen}
+      />
+      <Stack.Screen
+        name="BloodPressureStats"
+        component={BloodPressureStatsScreen}
+      />
+      <Stack.Screen
+        name="HeartRate"
+        component={HeartRateScreen}
+      />
+    </Stack.Navigator>
+  )
+}
+
 // Custom Tab Bar Component
 function CustomTabBar({ state, descriptors, navigation }) {
   const [translateValue] = useState(new Animated.Value(0));
@@ -419,7 +457,7 @@ const App = () => {
             />
             <Tab.Screen
               name="Stats"
-              component={HomeScreen}
+              component={HealthScoreStack}
             />
             <Tab.Screen 
               name="AI" 

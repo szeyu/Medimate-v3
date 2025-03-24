@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import YoutubePlayer from 'react-native-youtube-iframe';
 import Icon from'react-native-vector-icons/MaterialIcons';
+import { useFocusEffect } from '@react-navigation/native';
 
 import NutritionGuidanceAppBar from '../../../components/NutritionGuidanceAppBar';
 
@@ -27,6 +28,19 @@ const NutritionGuidanceScreen = () => {
   
   // Create animated value for swipe button
   const swipeAnim = useRef(new Animated.Value(0)).current;
+
+  useFocusEffect(
+    useCallback(() => {
+      // Reset the button position when screen is focused
+      Animated.timing(swipeAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+      
+      return () => {};
+    }, [])
+  );
   
   // Create pan responder for swipe gesture
   const panResponder = useRef(
@@ -49,6 +63,7 @@ const NutritionGuidanceScreen = () => {
             duration: 200,
             useNativeDriver: true,
           }).start(() => {
+            swipeAnim.setValue(0);
             // Navigate to the next screen
             navigation.navigate('HealthScore'); // Change to your desired screen
           });
@@ -487,8 +502,8 @@ const styles = StyleSheet.create({
         overflow: 'hidden', // Keep the sliding icon within bounds
     },
     swipeIconContainer: {
-        width: 50,
-        height: 50,
+        width: 60,
+        height: 60,
         borderRadius: 12,
         backgroundColor: '#FFFFFF',
         justifyContent: 'center',
