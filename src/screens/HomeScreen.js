@@ -100,7 +100,7 @@ const HomeScreen = ({ navigation }) => {
     // Show an alert that simulates a notification
     Alert.alert(
       "Medication Reminder",
-      "It's time to take your Losartan medication.",
+      "It's time to take your Painexal medication.",
       [
         {
           text: "Skip",
@@ -108,7 +108,7 @@ const HomeScreen = ({ navigation }) => {
         },
         { 
           text: "Take Now", 
-          onPress: () => navigation.navigate('MedicationSchedule')
+          onPress: () => navigation.navigate('Medications')
         }
       ]
     );

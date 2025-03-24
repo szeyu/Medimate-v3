@@ -7,749 +7,830 @@ import {
   TouchableOpacity,
   ScrollView,
   Switch,
-  Platform,
   Modal,
   FlatList,
+  SafeAreaView,
+  Image,
+  Animated
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import CustomAppBar from '../../../components/customAppBar';
+import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import Slider from '@react-native-community/slider';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
-import Feather from 'react-native-vector-icons/Feather';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useMedications } from '../../providers/MedicationProvider';
 
-const AddMedicationScreen = ({ navigation }) => {
-  const [name, setName] = useState('');
-  const [dosage, setDosage] = useState(1);
-  const [frequency, setFrequency] = useState('3x Per Week');
-  const [startDate, setStartDate] = useState('Jun 1');
-  const [endDate, setEndDate] = useState('Jun 25');
-  const [mealOption, setMealOption] = useState('After');
-  const [selectedStyle, setSelectedStyle] = useState(0);
-  const [instructions, setInstructions] = useState('');
-  const [autoReminder, setAutoReminder] = useState(true);
-  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
-  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
-  const [startDateObj, setStartDateObj] = useState(new Date());
-  const [endDateObj, setEndDateObj] = useState(new Date(Date.now() + 24 * 60 * 60 * 1000 * 24)); // 24 days later
-  const [tempStartDate, setTempStartDate] = useState(new Date());
-  const [tempEndDate, setTempEndDate] = useState(new Date(Date.now() + 24 * 60 * 60 * 1000 * 24));
-
-
-  const medicationStyles = [
-    { icon: 'favorite', color: '#000000', bg: '#F3F4F6'},
-    { icon: 'medical-services', color: '#000000', bg: '#F3F4F6'},
-    { type: 'fontawesome', icon: faPlus, color: '#000000', bg: '#F3F4F6' },
-    { icon: 'flash-on', color: '#000000', bg: '#F3F4F6'},
-    { type: 'feather', icon: 'more-horizontal', color: '#000000', bg: '#F3F4F6' },
-  ];
-
-  const [sliderWidth, setSliderWidth] = useState(0);
-  // Add new state for frequency dropdown
+const AddMedicationScreen = ({ route, navigation }) => {
+  const { medicationData, isEditing } = route.params || {};
+  const { addMedication, editMedication } = useMedications();
+  
+  // Form state
+  const [name, setName] = useState(medicationData?.name || '');
+  const [description, setDescription] = useState(medicationData?.description || '');
+  const [dosage, setDosage] = useState(medicationData?.dosage || '');
+  const [frequency, setFrequency] = useState(medicationData?.frequency || 'Once daily');
+  const [time, setTime] = useState(medicationData?.time || '8:00 AM');
+  const [startDate, setStartDate] = useState(medicationData?.startDate ? new Date(medicationData.startDate) : new Date());
+  const [duration, setDuration] = useState(medicationData?.duration || '4 weeks');
+  const [instructions, setInstructions] = useState(medicationData?.instructions || 'Take with food');
+  const [cost, setCost] = useState(medicationData?.cost ? String(medicationData.cost) : '');
+  
+  // UI state
   const [showFrequencyModal, setShowFrequencyModal] = useState(false);
+  const [showTimeModal, setShowTimeModal] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showDurationModal, setShowDurationModal] = useState(false);
+  const [showInstructionsModal, setShowInstructionsModal] = useState(false);
+  
+  // Options for dropdowns
   const frequencyOptions = [
-    '1x Per Day',
-    '2x Per Day',
-    '3x Per Day',
-    '1x Per Week',
-    '2x Per Week',
-    '3x Per Week',
-    'As Needed'
+    'Once daily',
+    'Twice daily',
+    '3 times daily',
+    'Every other day',
+    'Once weekly',
+    'As needed'
+  ];
+  
+  const timeOptions = [
+    '6:00 AM',
+    '7:00 AM',
+    '8:00 AM',
+    '12:00 PM',
+    '1:00 PM',
+    '6:00 PM',
+    '8:00 PM',
+    '10:00 PM'
+  ];
+  
+  const durationOptions = [
+    '1 week',
+    '2 weeks',
+    '4 weeks',
+    '6 weeks',
+    '8 weeks',
+    '3 months',
+    '6 months',
+    'Ongoing'
+  ];
+  
+  const instructionOptions = [
+    'Take with food',
+    'Take on empty stomach',
+    'Take before meals',
+    'Take after meals',
+    'Take with water',
+    'Do not take with dairy',
+    'Take at bedtime'
   ];
 
-
+  // Format date for display
   const formatDate = (date) => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const month = months[date.getMonth()];
-    const day = date.getDate();
-    return `${month} ${day}`;
+    return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
   };
 
-  const handleStartDateChange = (event, selectedDate) => {
+  // Handle date change
+  const handleDateChange = (event, selectedDate) => {
+    setShowDatePicker(false);
     if (selectedDate) {
-      setTempStartDate(selectedDate);
+      setStartDate(selectedDate);
     }
   };
-  
-  const handleEndDateChange = (event, selectedDate) => {
-    if (selectedDate) {
-      setTempEndDate(selectedDate);
-    }
-  };
-  
-  // Confirm button handlers
-  const confirmStartDate = () => {
-    setStartDateObj(tempStartDate);
-    setStartDate(formatDate(tempStartDate));
-    setShowStartDatePicker(false);
-  };
-  
-  const confirmEndDate = () => {
-    setEndDateObj(tempEndDate);
-    setEndDate(formatDate(tempEndDate));
-    setShowEndDatePicker(false);
-  };
-  
-  const handleSliderLayout = (event) => {
-    const { width } = event.nativeEvent.layout;
-    setSliderWidth(width);
-  };
-  
-  const handleSliderPress = (event) => {
-    if (sliderWidth === 0) return;
+
+  // Add this state to track the estimated cost
+  const [estimatedCost, setEstimatedCost] = useState(112.68);
+
+  // Update the cost change handler
+  const handleCostChange = (value) => {
+    setCost(value);
+    // Update the estimated cost in the card
+    const newCost = parseFloat(value) || 0;
+    const oldCost = medicationData?.cost || 0;
     
-    const { locationX } = event.nativeEvent;
-    const newDosage = Math.max(1, Math.min(5, Math.round((locationX / sliderWidth) * 5)));
-    setDosage(newDosage);
+    if (isEditing) {
+      // If editing, only show the difference in cost
+      const costDifference = newCost - oldCost;
+      setEstimatedCost(112.68 + costDifference);
+    } else {
+      // If adding new, show the total with new cost
+      setEstimatedCost(112.68 + newCost);
+    }
   };
+
+  // Save medication
+  const handleSaveMedication = async () => {
+    const updatedMedication = {
+      name,
+      dosage,
+      frequency,
+      time,
+      instructions,
+      isActive: true,
+      startDate: startDate.toISOString(),
+      endDate: null, // Calculate based on duration
+      mealOption: instructions.includes('with food') ? 'With Food' : 
+                 instructions.includes('empty stomach') ? 'Before Food' : 'After Food',
+      cost: parseFloat(cost) || 0,
+      description,
+      duration,
+    };
+    
+    if (isEditing) {
+      // Update existing medication
+      await editMedication(medicationData.id, updatedMedication);
+    } else {
+      // Add new medication
+      await addMedication(updatedMedication);
+    }
+    
+    // Navigate back to medication screen
+    navigation.navigate('MedicationList');
+  };
+
+  // Existing medications for preview
+  const existingMedications = [
+    {
+      id: '1',
+      name: 'Vitamin C',
+      dosage: '100mg',
+      frequency: '1x Per Day',
+      time: '7:00 AM',
+      instructions: 'Before Breakfast',
+    },
+    {
+      id: '2',
+      name: 'Painexal',
+      dosage: '500mg',
+      frequency: '2x Per Day',
+      time: '10:00 AM',
+      instructions: 'After Breakfast',
+    }
+  ];
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={{ flex: 1, backgroundColor: '#F3F5F9' }}>
-        <CustomAppBar navigation={navigation} />
-      </View>
-      <View style={styles.content}>
-        <View style={styles.section}>
-          <Text style={styles.label}>Medication Name</Text>
-          <View style={styles.inputContainer}>
-            <Icon name="description" size={20} color="#6B7280" style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              value={name}
-              onChangeText={setName}
-              placeholder="Oxycodone"
-              placeholderTextColor="#9CA3AF"
-            />
-            <TouchableOpacity>
-              <Icon name="edit" size={20} color="#6B7280" />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <View style={styles.section}>
-        <View style={styles.labelRow}>
-          <Text style={styles.label}>Medication Dosage</Text>
-        </View>
-        <View style={styles.sliderContainer}>
-          <Slider
-            style={styles.slider}
-            minimumValue={1}
-            maximumValue={5}
-            step={1}
-            value={dosage}
-            onValueChange={setDosage}
-            minimumTrackTintColor="#2563EB"
-            maximumTrackTintColor="#E5E7EB"
-            thumbTintColor="#2563EB"
-          />
-          <View style={styles.sliderLabels}>
-            <Text style={styles.sliderLabel}>1</Text>
-            <Text style={styles.sliderLabel}>3</Text>
-            <Text style={styles.sliderLabel}>5</Text>
-          </View>
-        </View>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Icon name="arrow-back" size={24} color="#333" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>
+          {isEditing ? 'Edit Medication' : 'Add Medication'}
+        </Text>
+        <View style={styles.backButton} />
       </View>
 
-        <View style={styles.section}>
-          <Text style={styles.label}>Medication Frequency</Text>
-          <TouchableOpacity 
-            style={styles.selectButton}
-            onPress={() => setShowFrequencyModal(true)}
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Financial Cost Card */}
+        <View style={styles.cardContainer}>
+          <LinearGradient
+            colors={['#8A3FFC', '#6610F2']}
+            style={styles.cardGradient}
           >
-            <Icon name="event" size={20} color="#6B7280" />
-            <Text style={styles.selectButtonText}>{frequency}</Text>
-            <Icon name="keyboard-arrow-down" size={20} color="#6B7280" />
-          </TouchableOpacity>
-          <Modal
-            visible={showFrequencyModal}
-            transparent={true}
-            animationType="fade"
-            onRequestClose={() => setShowFrequencyModal(false)}
-          >
-            <TouchableOpacity 
-              style={styles.modalOverlay}
-              activeOpacity={1}
-              onPress={() => setShowFrequencyModal(false)}
-            >
-              <View style={styles.modalContent}>
-                <Text style={styles.modalTitle}>Select Frequency</Text>
-                <FlatList
-                  data={frequencyOptions}
-                  keyExtractor={(item) => item}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
-                      style={[
-                        styles.frequencyOption,
-                        frequency === item && styles.frequencyOptionSelected
-                      ]}
-                      onPress={() => {
-                        setFrequency(item);
-                        setShowFrequencyModal(false);
-                      }}
-                    >
-                      <Text style={[
-                        styles.frequencyOptionText,
-                        frequency === item && styles.frequencyOptionTextSelected
-                      ]}>
-                        {item}
-                      </Text>
-                      {frequency === item && (
-                        <Icon name="check" size={20} color="#2563EB" />
-                      )}
-                    </TouchableOpacity>
-                  )}
-                />
-              </View>
-            </TouchableOpacity>
-          </Modal>
-        </View>
-
-        <View style={styles.section}>
-        <Text style={styles.label}>Medication Duration</Text>
-        <View style={styles.durationContainer}>
-          <View style={styles.durationColumn}>
-            <Text style={styles.durationLabel}>From</Text>
-            <TouchableOpacity 
-              style={styles.dateButton}
-              onPress={() => {
-                setShowEndDatePicker(false); // Close other picker first
-                setTempStartDate(startDateObj); // Initialize with current value
-                setShowStartDatePicker(true);
-              }}
-            >
-              <Icon name="event" size={20} color="#6B7280" />
-              <Text style={styles.dateButtonText}>{startDate}</Text>
-              <Icon name="keyboard-arrow-down" size={20} color="#6B7280" />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.durationColumn}>
-            <Text style={styles.durationLabel}>To</Text>
-            <TouchableOpacity 
-              style={styles.dateButton}
-              onPress={() => {
-                setShowStartDatePicker(false); // Close other picker first
-                setTempEndDate(endDateObj); // Initialize with current value
-                setShowEndDatePicker(true);
-              }}
-            >
-              <Icon name="event" size={20} color="#6B7280" />
-              <Text style={styles.dateButtonText}>{endDate}</Text>
-              <Icon name="keyboard-arrow-down" size={20} color="#6B7280" />
-            </TouchableOpacity>
-          </View>
+            <Text style={styles.cardLabel}>ESTIMATED MONTHLY EXPENSES</Text>
+            <Text style={styles.cardAmount}>RM {estimatedCost.toFixed(2)}</Text>
+            <Text style={styles.cardSubtext}>Including this medication</Text>
+          </LinearGradient>
         </View>
         
-        {/* Move date pickers outside the columns to prevent overlap */}
-        {showStartDatePicker && (
-          <Modal
-            transparent={true}
-            animationType="fade"
-            visible={showStartDatePicker}
-            onRequestClose={() => setShowStartDatePicker(false)}
-          >
-            <TouchableOpacity 
-              style={styles.modalOverlay}
-              activeOpacity={1}
-              onPress={() => setShowStartDatePicker(false)}
-            >
-              <View style={styles.datePickerContainer}>
-                <View style={styles.datePickerHeader}>
-                  <Text style={styles.datePickerTitle}>Select Start Date</Text>
-                  <TouchableOpacity onPress={() => setShowStartDatePicker(false)}>
-                    <Icon name="close" size={24} color="#6B7280" />
-                  </TouchableOpacity>
-                </View>
-                <DateTimePicker
-                  value={tempStartDate}
-                  mode="date"
-                  display="spinner"
-                  onChange={handleStartDateChange}
-                  style={styles.datePicker}
-                />
-                <TouchableOpacity 
-                  style={styles.datePickerButton}
-                  onPress={confirmStartDate}
-                >
-                  <Text style={styles.datePickerButtonText}>Confirm</Text>
-                </TouchableOpacity>
-              </View>
-            </TouchableOpacity>
-          </Modal>
-        )}
-        
-        {showEndDatePicker && (
-          <Modal
-            transparent={true}
-            animationType="fade"
-            visible={showEndDatePicker}
-            onRequestClose={() => setShowEndDatePicker(false)}
-          >
-            <TouchableOpacity 
-              style={styles.modalOverlay}
-              activeOpacity={1}
-              onPress={() => setShowEndDatePicker(false)}
-            >
-              <View style={styles.datePickerContainer}>
-                <View style={styles.datePickerHeader}>
-                  <Text style={styles.datePickerTitle}>Select End Date</Text>
-                  <TouchableOpacity onPress={() => setShowEndDatePicker(false)}>
-                    <Icon name="close" size={24} color="#6B7280" />
-                  </TouchableOpacity>
-                </View>
-                <DateTimePicker
-                  value={tempEndDate}
-                  mode="date"
-                  display="spinner"
-                  onChange={handleEndDateChange}
-                  minimumDate={startDateObj}
-                  style={styles.datePicker}
-                />
-                <TouchableOpacity 
-                  style={styles.datePickerButton}
-                  onPress={confirmEndDate}
-                >
-                  <Text style={styles.datePickerButtonText}>Confirm</Text>
-                </TouchableOpacity>
-              </View>
-            </TouchableOpacity>
-          </Modal>
-        )}
-      </View>
-
-        <View style={styles.section}>
-          <View style={styles.labelRow}>
-            <Text style={styles.label}>Take with Meal?</Text>
-            <TouchableOpacity>
-              <Text style={styles.seeAllText}>Select 1</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.mealOptionsContainer}>
-            <TouchableOpacity 
-              style={[
-                styles.mealOption,
-                mealOption === 'Before' && styles.mealOptionSelected
-              ]}
-              onPress={() => setMealOption('Before')}
-            >
-              <Icon 
-                name="undo" 
-                size={20} 
-                color={mealOption === 'Before' ? '#FFFFFF' : '#1F2937'} 
-              />
-              <Text style={[
-                styles.mealOptionText,
-                mealOption === 'Before' && styles.mealOptionTextSelected
-              ]}>Before</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[
-                styles.mealOption,
-                mealOption === 'After' && styles.mealOptionSelected
-              ]}
-              onPress={() => setMealOption('After')}
-            >
-              <Icon 
-                name="redo" 
-                size={20} 
-                color={mealOption === 'After' ? '#FFFFFF' : '#1F2937'} 
-              />
-              <Text style={[
-                styles.mealOptionText,
-                mealOption === 'After' && styles.mealOptionTextSelected
-              ]}>After</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <View style={styles.labelRow}>
-            <Text style={styles.label}>Select Medication Style</Text>
-            <TouchableOpacity>
-              <Text style={styles.seeAllText}>See All</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.styleGrid}>
-            {medicationStyles.map((style, index) => (
-              <TouchableOpacity
-                key={index}
-                style={[
-                  styles.styleOption,
-                  { backgroundColor: selectedStyle === index ? '#893FFC' : style.bg },
-                  selectedStyle === index && styles.styleOptionSelected
-                ]}
-                onPress={() => setSelectedStyle(index)}
-              >
-                {style.type === 'fontawesome' ? (
-                  <FontAwesomeIcon 
-                    icon={style.icon} 
-                    size={24} 
-                    color={selectedStyle === index ? '#FFFFFF' : style.color} 
-                  />
-                ) : style.type === 'feather' ? (
-                  <Feather
-                    name={style.icon} 
-                    size={24} 
-                    color={selectedStyle === index ? '#FFFFFF' : style.color} 
-                  />
-                ) : (
-                  <Icon 
-                    name={style.icon} 
-                    size={24} 
-                    color={selectedStyle === index ? '#FFFFFF' : style.color} 
-                  />
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <View style={styles.labelRow}>
-            <Text style={styles.label}>Custom AI Instruction</Text>
-          </View>
-          <View style={styles.instructionsContainer}>
-            <TextInput
-              style={styles.instructionsInput}
-              multiline
-              placeholder="Please remind me when I have reached the medication threshold prescribed by Dr. Hannibal Lecto"
-              placeholderTextColor="#6B7280"
-              value={instructions}
-              onChangeText={setInstructions}
-            />
-            <Text style={styles.characterCount}>250/500</Text>
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <View style={styles.reminderRow}>
-            <Text style={styles.label}>Set Auto Reminder?</Text>
-            <Switch
-              value={autoReminder}
-              onValueChange={setAutoReminder}
-              trackColor={{ false: "#D1D5DB", true: "#2563EB" }}
-              thumbColor="#FFFFFF"
-              style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
-            />
-          </View>
-          <Text style={styles.switchDescription}>
-             Enable automatic reminders for this medication
+        {/* Form Title */}
+        <View style={styles.formTitleContainer}>
+          <Text style={styles.formTitle}>Medication Details</Text>
+          <Text style={styles.formSubtitle}>
+            {medicationData ? "Review the scanned information" : "Enter medication information"}
           </Text>
         </View>
-
-        <TouchableOpacity 
-          style={styles.addButton}
-          onPress={() => navigation.navigate('MedicationSchedule')}
+        
+        {/* Medication Form */}
+        <View style={styles.formContainer}>
+          {/* Medication Name */}
+          <View style={styles.formGroup}>
+            <Text style={styles.formLabel}>Medication Name</Text>
+            <TextInput
+              style={styles.textInput}
+              value={name}
+              onChangeText={setName}
+              placeholder="Enter medication name"
+            />
+          </View>
+          
+          {/* Medication Description */}
+          <View style={styles.formGroup}>
+            <Text style={styles.formLabel}>Description</Text>
+            <TextInput
+              style={[styles.textInput, styles.textArea]}
+              value={description}
+              onChangeText={setDescription}
+              placeholder="Enter medication description"
+              multiline
+              numberOfLines={3}
+            />
+          </View>
+          
+          {/* Dosage */}
+          <View style={styles.formGroup}>
+            <Text style={styles.formLabel}>Dosage</Text>
+            <TextInput
+              style={styles.textInput}
+              value={dosage}
+              onChangeText={setDosage}
+              placeholder="Enter dosage (e.g., 50mg)"
+            />
+          </View>
+          
+          {/* Frequency */}
+          <View style={styles.formGroup}>
+            <Text style={styles.formLabel}>Frequency</Text>
+            <TouchableOpacity
+              style={styles.selectInput}
+              onPress={() => setShowFrequencyModal(true)}
+            >
+              <Text style={styles.selectInputText}>{frequency}</Text>
+              <Icon name="arrow-drop-down" size={24} color="#666" />
+            </TouchableOpacity>
+          </View>
+          
+          {/* Time */}
+          <View style={styles.formGroup}>
+            <Text style={styles.formLabel}>Time</Text>
+            <TouchableOpacity
+              style={styles.selectInput}
+              onPress={() => setShowTimeModal(true)}
+            >
+              <Text style={styles.selectInputText}>{time}</Text>
+              <Icon name="access-time" size={24} color="#666" />
+            </TouchableOpacity>
+          </View>
+          
+          {/* Start Date */}
+          <View style={styles.formGroup}>
+            <Text style={styles.formLabel}>Start Date</Text>
+            <TouchableOpacity
+              style={styles.selectInput}
+              onPress={() => setShowDatePicker(true)}
+            >
+              <Text style={styles.selectInputText}>{formatDate(startDate)}</Text>
+              <Icon name="calendar-today" size={24} color="#666" />
+            </TouchableOpacity>
+          </View>
+          
+          {/* Duration */}
+          <View style={styles.formGroup}>
+            <Text style={styles.formLabel}>Duration</Text>
+            <TouchableOpacity
+              style={styles.selectInput}
+              onPress={() => setShowDurationModal(true)}
+            >
+              <Text style={styles.selectInputText}>{duration}</Text>
+              <Icon name="arrow-drop-down" size={24} color="#666" />
+            </TouchableOpacity>
+          </View>
+          
+          {/* Instructions */}
+          <View style={styles.formGroup}>
+            <Text style={styles.formLabel}>Instructions</Text>
+            <TouchableOpacity
+              style={styles.selectInput}
+              onPress={() => setShowInstructionsModal(true)}
+            >
+              <Text style={styles.selectInputText}>{instructions}</Text>
+              <Icon name="arrow-drop-down" size={24} color="#666" />
+            </TouchableOpacity>
+          </View>
+          
+          {/* Cost */}
+          <View style={styles.formGroup}>
+            <Text style={styles.formLabel}>Monthly Cost (RM)</Text>
+            <TextInput
+              style={styles.textInput}
+              value={cost}
+              onChangeText={handleCostChange}
+              placeholder="Enter monthly cost"
+              keyboardType="numeric"
+            />
+            <Text style={styles.helperText}>This will update your estimated monthly expenses</Text>
+          </View>
+        </View>
+        
+        {/* Preview Section */}
+        <View style={styles.previewContainer}>
+          <Text style={styles.previewTitle}>Schedule Preview</Text>
+          
+          {/* Existing medications */}
+          {existingMedications.map(med => (
+            <View key={med.id} style={styles.medicationItem}>
+              <View style={styles.timeContainer}>
+                <Text style={styles.timeText}>{med.time}</Text>
+                <View style={styles.timeConnector} />
+              </View>
+              
+              <View style={styles.medicationDetails}>
+                <View style={styles.medicationNameContainer}>
+                  <Text style={styles.medicationName}>{med.name} {med.dosage}</Text>
+                  <Text style={styles.medicationInstructions}>
+                    {med.frequency} • {med.instructions}
+                  </Text>
+                </View>
+                
+                <View style={styles.checkboxContainer}>
+                  <View style={styles.checkbox} />
+                </View>
+              </View>
+            </View>
+          ))}
+          
+          {/* New medication preview */}
+          <View style={styles.medicationItem}>
+            <View style={styles.timeContainer}>
+              <Text style={styles.timeText}>{time}</Text>
+              <View style={styles.timeConnector} />
+            </View>
+            
+            <View style={[styles.medicationDetails, styles.newMedicationDetails]}>
+              <View style={styles.medicationNameContainer}>
+                <Text style={styles.medicationName}>{name || 'New Medication'} {dosage}</Text>
+                <Text style={styles.medicationInstructions}>
+                  {frequency} • {instructions}
+                </Text>
+              </View>
+              
+              <View style={styles.checkboxContainer}>
+                <View style={styles.checkbox}>
+                  <Icon name="add" size={16} color="#8A3FFC" />
+                </View>
+              </View>
+            </View>
+          </View>
+        </View>
+        
+        {/* Save Button */}
+        <TouchableOpacity
+          style={styles.saveButton}
+          onPress={handleSaveMedication}
         >
-          <Text style={styles.addButtonText}>Save</Text>
+          <Text style={styles.saveButtonText}>SAVE MEDICATION</Text>
         </TouchableOpacity>
-      </View>
-    </ScrollView>
+      </ScrollView>
+      
+      {/* Frequency Modal */}
+      <Modal
+        visible={showFrequencyModal}
+        transparent={true}
+        animationType="fade"
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Select Frequency</Text>
+            <FlatList
+              data={frequencyOptions}
+              keyExtractor={(item) => item}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.modalOption}
+                  onPress={() => {
+                    setFrequency(item);
+                    setShowFrequencyModal(false);
+                  }}
+                >
+                  <Text 
+                    style={[
+                      styles.modalOptionText,
+                      frequency === item && styles.modalOptionTextSelected
+                    ]}
+                  >
+                    {item}
+                  </Text>
+                  {frequency === item && (
+                    <Icon name="check" size={20} color="#8A3FFC" />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setShowFrequencyModal(false)}
+            >
+              <Text style={styles.modalCloseButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+      
+      {/* Time Modal */}
+      <Modal
+        visible={showTimeModal}
+        transparent={true}
+        animationType="fade"
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Select Time</Text>
+            <FlatList
+              data={timeOptions}
+              keyExtractor={(item) => item}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.modalOption}
+                  onPress={() => {
+                    setTime(item);
+                    setShowTimeModal(false);
+                  }}
+                >
+                  <Text 
+                    style={[
+                      styles.modalOptionText,
+                      time === item && styles.modalOptionTextSelected
+                    ]}
+                  >
+                    {item}
+                  </Text>
+                  {time === item && (
+                    <Icon name="check" size={20} color="#8A3FFC" />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setShowTimeModal(false)}
+            >
+              <Text style={styles.modalCloseButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+      
+      {/* Date Picker */}
+      {showDatePicker && (
+        <DateTimePicker
+          value={startDate}
+          mode="date"
+          display="default"
+          onChange={handleDateChange}
+        />
+      )}
+      
+      {/* Duration Modal */}
+      <Modal
+        visible={showDurationModal}
+        transparent={true}
+        animationType="fade"
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Select Duration</Text>
+            <FlatList
+              data={durationOptions}
+              keyExtractor={(item) => item}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.modalOption}
+                  onPress={() => {
+                    setDuration(item);
+                    setShowDurationModal(false);
+                  }}
+                >
+                  <Text 
+                    style={[
+                      styles.modalOptionText,
+                      duration === item && styles.modalOptionTextSelected
+                    ]}
+                  >
+                    {item}
+                  </Text>
+                  {duration === item && (
+                    <Icon name="check" size={20} color="#8A3FFC" />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setShowDurationModal(false)}
+            >
+              <Text style={styles.modalCloseButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+      
+      {/* Instructions Modal */}
+      <Modal
+        visible={showInstructionsModal}
+        transparent={true}
+        animationType="fade"
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Select Instructions</Text>
+            <FlatList
+              data={instructionOptions}
+              keyExtractor={(item) => item}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.modalOption}
+                  onPress={() => {
+                    setInstructions(item);
+                    setShowInstructionsModal(false);
+                  }}
+                >
+                  <Text 
+                    style={[
+                      styles.modalOptionText,
+                      instructions === item && styles.modalOptionTextSelected
+                    ]}
+                  >
+                    {item}
+                  </Text>
+                  {instructions === item && (
+                    <Icon name="check" size={20} color="#8A3FFC" />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setShowInstructionsModal(false)}
+            >
+              <Text style={styles.modalCloseButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F5F9',
+    backgroundColor: '#F5F7FA',
   },
   header: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
-    paddingTop: 48, // Add extra padding for status bar
-    backgroundColor: '#1E293B', // Dark blue color from the image
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    marginBottom: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
   },
   backButton: {
     width: 40,
     height: 40,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)', // Transparent white
-    alignItems: 'center',
+    borderRadius: 20,
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#1F2937',
-    marginLeft: 16,
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
   },
-  content: {
-    padding: 16,
+  scrollContent: {
+    paddingBottom: 40,
   },
-  section: {
+  cardContainer: {
+    margin: 20,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  cardGradient: {
+    padding: 20,
+    height: 150,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cardLabel: {
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  cardAmount: {
+    color: '#FFFFFF',
+    fontSize: 32,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  cardSubtext: {
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 14,
+  },
+  formTitleContainer: {
+    paddingHorizontal: 20,
     marginBottom: 20,
   },
-  label: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#1F2937',
+  formTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
     marginBottom: 8,
   },
-  labelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 8,
-    padding: 12,
-    backgroundColor: '#F9FAFB',
-  },
-  inputIcon: {
-    marginRight: 8,
-  },
-  input: {
-    flex: 1,
+  formSubtitle: {
     fontSize: 16,
-    color: '#1F2937',
+    color: '#666',
   },
-  sliderContainer: {
-    marginBottom: 8,
+  formContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    marginHorizontal: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  slider: {
-    width: '100%',
-    height: 40,
+  formGroup: {
+    marginBottom: 20,
   },
-  sliderLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 10,
-  },
-  sliderLabel: {
-    color: '#6B7280',
-    fontSize: 14,
-  },
-  sliderFill: {
-    height: '100%',
-    backgroundColor: '#1167FE',
-    borderRadius: 4,
-  },
-  seeAllButton: {
-    alignSelf: 'flex-end',
-  },
-  seeAllText: {
-    color: '#1167FE',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  selectButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 8,
-    padding: 12,
-    backgroundColor: '#F9FAFB',
-  },
-  selectButtonText: {
-    flex: 1,
-    fontSize: 16,
-    color: '#1F2937',
-    marginLeft: 8,
-  },
-  durationContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  durationColumn: {
-    flex: 1,
-    marginHorizontal: 4,
-  },
-  durationLabel: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginBottom: 4,
-  },
-  dateButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 8,
-    padding: 12,
-    backgroundColor: '#F9FAFB',
-  },
-  dateButtonText: {
-    flex: 1,
-    fontSize: 16,
-    color: '#1F2937',
-    marginLeft: 8,
-  },
-  switchDescription: {
-    fontSize: 14,
-    color: '#666666',
-    marginTop: 4,
-  },
-  mealOptionsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 8,
-  },
-  mealOption: {
-    flex: 1,
-    flexDirection: 'row',
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F9FAFB',
-    gap: 8,
-  },
-  mealOptionSelected: {
-    backgroundColor: '#2563EB',
-    borderColor: '#1167FE',
-  },
-  mealOptionText: {
-    fontSize: 16,
-    color: '#1F2937',
-  },
-  mealOptionTextSelected: {
-    color: '#FFFFFF',
-  },
-  styleGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 8,
-  },
-  styleOption: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  styleOptionSelected: {
-    borderWidth: 2,
-    borderColor: '#D8C7FB',
-  },
-  instructionsContainer: {
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 8,
-    backgroundColor: '#F9FAFB',
-    padding: 12,
-  },
-  instructionsInput: {
-    height: 80,
-    fontSize: 14,
-    color: '#1F2937',
-    textAlignVertical: 'top',
-  },
-  characterCount: {
-    fontSize: 12,
-    color: '#6B7280',
-    alignSelf: 'flex-end',
-  },
-  reminderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  addButton: {
-    backgroundColor: '#1167FE',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    marginTop: 24,
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  addButtonText: {
-    color: '#FFFFFF',
+  formLabel: {
     fontSize: 16,
     fontWeight: '600',
-    marginRight: 8,
+    color: '#333',
+    marginBottom: 8,
+  },
+  textInput: {
+    backgroundColor: '#F3F5F9',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: '#333',
+  },
+  textArea: {
+    height: 100,
+    textAlignVertical: 'top',
+  },
+  selectInput: {
+    backgroundColor: '#F3F5F9',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  selectInputText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  previewContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    marginHorizontal: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  previewTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 16,
+  },
+  medicationItem: {
+    flexDirection: 'row',
+    marginBottom: 20,
+  },
+  timeContainer: {
+    alignItems: 'center',
+    width: 60,
+  },
+  timeText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+    marginBottom: 8,
+  },
+  timeConnector: {
+    width: 2,
+    flex: 1,
+    backgroundColor: '#E5E7EB',
+  },
+  medicationDetails: {
+    flex: 1,
+    backgroundColor: '#F3F5F9',
+    borderRadius: 12,
+    padding: 16,
+    marginLeft: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  newMedicationDetails: {
+    backgroundColor: '#F0E6FF', // Light purple to highlight new medication
+    borderWidth: 1,
+    borderColor: '#8A3FFC',
+  },
+  medicationNameContainer: {
+    flex: 1,
+  },
+  medicationName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 4,
+  },
+  medicationInstructions: {
+    fontSize: 14,
+    color: '#666',
+  },
+  checkboxContainer: {
+    marginLeft: 12,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#8A3FFC',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  saveButton: {
+    backgroundColor: '#8A3FFC',
+    borderRadius: 12,
+    paddingVertical: 16,
+    marginHorizontal: 20,
+    marginBottom: 20,
+    alignItems: 'center',
+    shadowColor: '#8A3FFC',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  saveButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
   },
   modalContent: {
-    width: '90%',
+    width: '80%',
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    maxHeight: '80%',
+    borderRadius: 16,
+    padding: 20,
+    maxHeight: '70%',
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#1F2937',
+    fontWeight: 'bold',
+    color: '#333',
     marginBottom: 16,
     textAlign: 'center',
   },
-  frequencyOption: {
+  modalOption: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingVertical: 12,
-    paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: '#F3F5F9',
   },
-  frequencyOptionSelected: {
-    backgroundColor: '#F3F4F6',
-  },
-  frequencyOptionText: {
+  modalOptionText: {
     fontSize: 16,
-    color: '#1F2937',
+    color: '#333',
   },
-  frequencyOptionTextSelected: {
-    color: '#2563EB',
-    fontWeight: '500',
+  modalOptionTextSelected: {
+    color: '#8A3FFC',
+    fontWeight: 'bold',
   },
-  // Add these new styles for the date picker modal
-  datePickerContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    width: '90%',
-    alignItems: 'center',
-  },
-  datePickerHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
-    marginBottom: 16,
-  },
-  datePickerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1F2937',
-  },
-  datePicker: {
-    width: '100%',
-    height: 200,
-  },
-  datePickerButton: {
-    backgroundColor: '#2563EB',
+  modalCloseButton: {
+    backgroundColor: '#F3F5F9',
     borderRadius: 8,
-    padding: 12,
-    width: '100%',
+    paddingVertical: 12,
     alignItems: 'center',
     marginTop: 16,
   },
-  datePickerButtonText: {
-    color: '#FFFFFF',
+  modalCloseButtonText: {
+    color: '#333',
     fontSize: 16,
     fontWeight: '600',
+  },
+  helperText: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 4,
+    fontStyle: 'italic',
   },
 });
 

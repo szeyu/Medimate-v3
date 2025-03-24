@@ -15,7 +15,7 @@ const NotificationScreen = ({ navigation }) => {
     {
         id: '1',
         title: 'Medication Reminder',
-        message: 'Time to take Losartan',
+        message: 'Time to take Painexal',
         time: 'now',
         type: 'medication',
         read: false,
@@ -23,7 +23,7 @@ const NotificationScreen = ({ navigation }) => {
     {
         id: '2',
         title: 'Medication Reminder',
-        message: 'Time to take Amoxicillin',
+        message: 'Time to take Vitamin C',
         time: '1 hour ago',
         type: 'medication',
         read: false,
@@ -31,7 +31,7 @@ const NotificationScreen = ({ navigation }) => {
     {
         id: '3',
         title: 'Medication Reminder',
-        message: 'Time to take Albuterol',
+        message: 'Time to take Vitamin C',
         time: 'Yesterday',
         type: 'medication',
         read: true,
@@ -74,7 +74,7 @@ const NotificationScreen = ({ navigation }) => {
         onPress={() => {
           // Handle notification press - could navigate to relevant screen
           if (item.type === 'medication') {
-            navigation.navigate('MedicationSchedule');
+            navigation.navigate('Medications');
           }
         }}
       >

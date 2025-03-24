@@ -73,8 +73,8 @@ const HomeStack = () => {
         component={AddMedicationScreen}
       />
       <Stack.Screen
-        name="MedicationSchedule"
-        component={MedicationScheduleScreen}
+        name="MedicationList"
+        component={MedicationScreen}
       />
       <Stack.Screen
         name="MedicationDetail"
@@ -152,11 +152,11 @@ const MedicationStack = () => {
         component={MedicationDetailScreen} 
         options={{ headerShown: false }}
       />
-      <Stack.Screen 
+      {/* <Stack.Screen 
         name="MedicationSchedule" 
         component={MedicationScheduleScreen} 
         options={{ headerShown: false }}
-      />
+      /> */}
       <Stack.Screen
         name="Scan"
         component={ScanScreen}
@@ -172,15 +172,11 @@ const MedicationStack = () => {
         component={ScanMedicationScreen}
         options={{ headerShown: false }}
       />
-      <Stack.Screen 
-        name="HomeScreen" 
-        component={HomeScreen} 
-      />
-      <Stack.Screen
+      {/* <Stack.Screen
         name="MedicationDescription"
         component={MedicationDescriptionScreen}
         options={{ headerShown: false }}
-      />
+      /> */}
     </Stack.Navigator>
   );
 };
