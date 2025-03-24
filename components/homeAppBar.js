@@ -1,10 +1,14 @@
-import React from 'react';
-import { View, Text, Image, TouchableOpacity, StatusBar, StyleSheet, TextInput } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, Image, TouchableOpacity, StatusBar, StyleSheet, TextInput, Animated, Easing } from 'react-native';
 import { Ionicons, MaterialIcons, FontAwesome } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import UserHeader from '../src/widgets/UserHeader';
 
 const HomeAppBar = ({ navigation, username = "SSYOK" }) => {
+  // Animation values
+  const catAnimation = useRef(new Animated.Value(0)).current;
+  const [isAnimating, setIsAnimating] = useState(false);
+  
   // Get current date
   const today = new Date();
   const options = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
@@ -13,6 +17,56 @@ const HomeAppBar = ({ navigation, username = "SSYOK" }) => {
   const handleNotificationPress = () => {
     navigation.navigate('NotificationScreen');
   };
+  
+  // Animation function for the cat
+  const animateCat = () => {
+    if (isAnimating) return;
+    
+    setIsAnimating(true);
+    catAnimation.setValue(0);
+    
+    Animated.sequence([
+      // First bounce up
+      Animated.timing(catAnimation, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+        easing: Easing.out(Easing.back(1.5))
+      }),
+      // Spin around
+      Animated.timing(catAnimation, {
+        toValue: 2,
+        duration: 600,
+        useNativeDriver: true,
+        easing: Easing.inOut(Easing.ease)
+      }),
+      // Bounce back to normal
+      Animated.timing(catAnimation, {
+        toValue: 3,
+        duration: 300,
+        useNativeDriver: true,
+        easing: Easing.bounce
+      })
+    ]).start(() => {
+      setIsAnimating(false);
+    });
+  };
+  
+  // Interpolate animation values
+  const catTranslateY = catAnimation.interpolate({
+    inputRange: [0, 0.5, 1, 2, 2.5, 3],
+    outputRange: [0, -30, -15, -15, -5, 0]
+  });
+  
+  const catRotate = catAnimation.interpolate({
+    inputRange: [0, 1, 1.5, 2, 3],
+    outputRange: ['0deg', '0deg', '180deg', '360deg', '360deg']
+  });
+  
+  const catScale = catAnimation.interpolate({
+    inputRange: [0, 0.5, 1, 2, 2.5, 3],
+    outputRange: [1, 1.2, 1.1, 1.1, 1.05, 1]
+  });
 
   return (
     <>
@@ -32,11 +86,31 @@ const HomeAppBar = ({ navigation, username = "SSYOK" }) => {
 
         {/* Cat Image in the Middle */}
         <View style={styles.catImageContainer}>
-          <Image 
-            source={require('../assets/cat.png')} 
-            style={styles.catImage}
-            resizeMode="contain"
-          />
+          <TouchableOpacity 
+            activeOpacity={0.8}
+            onPress={animateCat}
+          >
+            <View style={styles.catGlowEffect}>
+              <Animated.View
+                style={{
+                  transform: [
+                    { translateY: catTranslateY },
+                    { rotate: catRotate },
+                    { scale: catScale }
+                  ]
+                }}
+              >
+                <Image 
+                  source={require('../assets/cat.png')} 
+                  style={styles.catImage}
+                  resizeMode="contain"
+                />
+              </Animated.View>
+            </View>
+          </TouchableOpacity>
+          <View style={styles.catNameBadge}>
+            <Text style={styles.catNameText}>Medi</Text>
+          </View>
         </View>
 
         {/* Progress Bar */}
@@ -110,7 +184,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     overflow: 'hidden',
     width: '100%',
-    height: 520,
+    height: 640,
   },
   dateContainer: {
     flexDirection: 'row',
@@ -125,25 +199,53 @@ const styles = StyleSheet.create({
   },
   catImageContainer: {
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 20,
     marginTop: 10,
+    position: 'relative',
+  },
+  catGlowEffect: {
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    backgroundColor: 'rgba(138, 63, 252, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#8A3FFC',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 20,
+    elevation: 10,
   },
   catImage: {
-    width: 100,
-    height: 100,
-    // Apply a light glow effect to make the cat stand out against the dark background
-    shadowColor: '#FFFFFF',
-    shadowOffset: { width: 0, height: 0 },
+    width: 200,
+    height: 200,
+    transform: [{scale: 1.1}],
+  },
+  catNameBadge: {
+    position: 'absolute',
+    bottom: 0,
+    backgroundColor: '#8A3FFC',
+    paddingHorizontal: 15,
+    paddingVertical: 5,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
-    shadowRadius: 10,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  catNameText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   progressBarContainer: {
-    marginBottom: 15,
+    marginBottom: 10,
   },
   progressBarWrapper: {
     position: 'relative',
     height: 20,
-    marginBottom: 30,
+    marginBottom: 20,
   },
   progressBarBackground: {
     height: 10,
@@ -192,7 +294,7 @@ const styles = StyleSheet.create({
     marginLeft: 2,
   },
   healthScoreCardContainer: {
-    marginBottom: 25,
+    marginBottom: 15,
   },
   healthScoreCard: {
     backgroundColor: '#FFFFFF',
@@ -244,7 +346,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     paddingHorizontal: 15,
     paddingVertical: 12,
-    marginBottom: 20,
+    marginBottom: 15,
   },
   searchInput: {
     flex: 1,

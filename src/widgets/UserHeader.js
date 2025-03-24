@@ -6,8 +6,13 @@ import { Ionicons, FontAwesome } from '@expo/vector-icons';
 
 const UserHeader = ({ username = "SSYOK" }) => {
   const navigation = useNavigation();
+
   return (
-    <View style={styles.userHeader}>
+    <TouchableOpacity 
+      style={styles.userHeader}
+      activeOpacity={0.8}
+      onPress={() => navigation.navigate('Profile')}
+    >
       <View style={styles.profileLeft}>
         <Image 
           source={require('../../assets/user-icon.png')} 
@@ -30,11 +35,9 @@ const UserHeader = ({ username = "SSYOK" }) => {
       </View>
       
       <View style={styles.rightIcons}>
-        <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
-          <Ionicons name="chevron-forward" size={24} color="#FFFFFF" />
-        </TouchableOpacity>
+        <Ionicons name="chevron-forward" size={24} color="#FFFFFF" />
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
