@@ -15,7 +15,6 @@ import { useNavigation } from '@react-navigation/native';
 
 // Import widget components
 import UserHeader from '../widgets/UserHeader';
-import HealthScoreCard from '../widgets/HealthScoreCard';
 import SmartHealthMetrics from '../widgets/SmartHealthMetrics';
 import GlucoseLevelCard from '../widgets/GlucoseLevelCard';
 import FitnessTrackerCard from '../widgets/FitnessTrackerCard';
@@ -121,8 +120,6 @@ const HomeScreen = ({ navigation }) => {
         <View style={styles.appBarContainer}>
           <HomeAppBar navigation={navigation} />
         </View>
-        <View style={styles.spacer} />
-        <HealthScoreCard />
         <View style={styles.spacer} />
         <SmartMetric />
         <View style={styles.spacer} />

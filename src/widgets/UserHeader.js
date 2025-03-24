@@ -1,42 +1,38 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
+import { Ionicons, FontAwesome } from '@expo/vector-icons';
 
-const UserHeader = () => {
+const UserHeader = ({ username = "SSYOK" }) => {
   const navigation = useNavigation();
-
-  const handleNotificationPress = () => {
-    navigation.navigate('NotificationScreen');
-  };
-
   return (
     <View style={styles.userHeader}>
-      <View style={styles.avatar}>
-        <Text style={styles.avatarText}>👤</Text>
-      </View>
-      <View style={styles.userInfo}>
-        <View style={styles.userNameRow}>
-          <Text style={styles.userName}>Hi, SSYOK</Text>
-          <Icon name="verified" size={18} color="#FFC107" />
-        </View>
-        <View style={styles.userStatsRow}>
-          <Text style={styles.userStatsText}>88</Text>
-          <Icon name="star" size={14} color="#FFC107" style={styles.starIcon} />
-          <Text style={styles.userStatsText}>Pro Member</Text>
-        </View>
-      </View>
-      <View style={styles.rightIcons}>
-        <TouchableOpacity 
-          style={styles.notificationButton}
-          onPress={handleNotificationPress}
-        >
-          <Icon name="notifications" size={24} color="#FFFFFF" />
-          <View style={styles.notificationBadge}>
-            <Text style={styles.badgeText}>3</Text>
+      <View style={styles.profileLeft}>
+        <Image 
+          source={require('../../assets/user-icon.png')} 
+          style={styles.profileImage}
+          defaultSource={require('../../assets/user-icon.png')}
+        />
+        <View style={styles.userInfo}>
+          <Text style={styles.greeting}>Hi, {username} <Text style={styles.waveEmoji}>👋</Text></Text>
+          <View style={styles.membershipRow}>
+            <View style={styles.percentageContainer}>
+              <Ionicons name="add" size={16} color="#1167FE" />
+              <Text style={styles.percentageText}>88%</Text>
+            </View>
+            <View style={styles.proMemberContainer}>
+              <FontAwesome name="star" size={16} color="#FFD700" />
+              <Text style={styles.proMemberText}>Pro Member</Text>
+            </View>
           </View>
+        </View>
+      </View>
+      
+      <View style={styles.rightIcons}>
+        <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
+          <Ionicons name="chevron-forward" size={24} color="#FFFFFF" />
         </TouchableOpacity>
-        <Icon name="chevron-right" size={24} color="#FFFFFF" />
       </View>
     </View>
   );
@@ -44,48 +40,59 @@ const UserHeader = () => {
 
 const styles = StyleSheet.create({
   userHeader: {
-    marginTop: 16,
     padding: 16,
     backgroundColor: '#2D3748',
     borderRadius: 16,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
   },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#9E9E9E',
-    justifyContent: 'center',
+  profileLeft: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  avatarText: {
-    fontSize: 24,
+  profileImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 15,
+    backgroundColor: '#8D9BB5',
   },
   userInfo: {
-    flex: 1,
-    marginLeft: 12,
+    marginLeft: 15,
   },
-  userNameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  userName: {
-    color: '#FFFFFF',
-    fontSize: 18,
+  greeting: {
+    color: 'white',
+    fontSize: 24,
     fontWeight: 'bold',
-    marginRight: 4,
+    marginBottom: 5,
   },
-  userStatsRow: {
+  waveEmoji: {
+    fontSize: 22,
+  },
+  membershipRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  userStatsText: {
-    color: '#FFFFFF',
-    fontSize: 14,
+  percentageContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 15,
   },
-  starIcon: {
-    marginHorizontal: 8,
+  percentageText: {
+    color: '#1167FE',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 2,
+  },
+  proMemberContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  proMemberText: {
+    color: 'white',
+    fontSize: 16,
+    marginLeft: 5,
   },
   rightIcons: {
     flexDirection: 'row',
@@ -94,6 +101,9 @@ const styles = StyleSheet.create({
   notificationButton: {
     marginRight: 12,
     position: 'relative',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    padding: 8,
+    borderRadius: 12,
   },
   notificationBadge: {
     position: 'absolute',

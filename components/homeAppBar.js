@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StatusBar, StyleSheet, TextInput } from 'react-native';
 import { Ionicons, MaterialIcons, FontAwesome } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import UserHeader from '../src/widgets/UserHeader';
 
 const HomeAppBar = ({ navigation, username = "SSYOK" }) => {
   // Get current date
@@ -15,37 +17,60 @@ const HomeAppBar = ({ navigation, username = "SSYOK" }) => {
   return (
     <>
       <StatusBar barStyle="light-content" backgroundColor="#242E49" />
-      <View style={styles.appBar}>
+      <LinearGradient
+        colors={['#2A3A5F', '#242E49']}
+        style={styles.appBar}
+      >
         {/* Date Display */}
         <View style={styles.dateContainer}>
           <Ionicons name="calendar-outline" size={20} color="#8D9BB5" />
           <Text style={styles.dateText}>{formattedDate}</Text>
         </View>
 
-        {/* User Profile Section */}
-        <View style={styles.profileSection}>
-          <View style={styles.profileLeft}>
-            <Image 
-              source={require('../assets/user-icon.png')} 
-              style={styles.profileImage}
-              defaultSource={require('../assets/user-icon.png')}
-            />
-            <View style={styles.userInfo}>
-              <Text style={styles.greeting}>Hi, {username} <Text style={styles.waveEmoji}>👋</Text></Text>
-              <View style={styles.membershipRow}>
-                <View style={styles.percentageContainer}>
-                  <Ionicons name="add" size={16} color="#1167FE" />
-                  <Text style={styles.percentageText}>88%</Text>
-                </View>
-                <View style={styles.proMemberContainer}>
-                  <FontAwesome name="star" size={16} color="#FFD700" />
-                  <Text style={styles.proMemberText}>Pro Member</Text>
-                </View>
+        {/* User Header */}
+        <UserHeader username={username} />
+
+        {/* Cat Image in the Middle */}
+        <View style={styles.catImageContainer}>
+          <Image 
+            source={require('../assets/cat.png')} 
+            style={styles.catImage}
+            resizeMode="contain"
+          />
+        </View>
+
+        {/* Progress Bar */}
+        <View style={styles.progressBarContainer}>
+          <View style={styles.progressBarWrapper}>
+            <View style={styles.progressBarBackground}>
+              <View style={[styles.progressBarFill, { width: '88%' }]} />
+            </View>
+            <View style={styles.percentageIndicator}>
+              <View style={styles.percentageArrow} />
+              <View style={styles.percentageBubble}>
+                <Text style={styles.percentageText}>88%</Text>
+                <Ionicons name="checkmark-circle" size={16} color="#4CAF50" style={styles.checkIcon} />
               </View>
             </View>
           </View>
-          <TouchableOpacity style={styles.profileRight} onPress={() => navigation.navigate('Profile')}>
-            <Ionicons name="chevron-forward" size={24} color="#8D9BB5" />
+        </View>
+
+        {/* Health Score Card */}
+        <View style={styles.healthScoreCardContainer}>
+          <TouchableOpacity 
+            style={styles.healthScoreCard}
+            onPress={() => navigation.navigate('HealthScore')}
+          >
+            <View style={styles.scoreBox}>
+              <Text style={styles.scoreNumber}>88</Text>
+            </View>
+            <View style={styles.scoreInfo}>
+              <Text style={styles.scoreTitle}>Medimate Score</Text>
+              <Text style={styles.scoreDescription}>
+                Based on the data, we think your health status is above average.
+              </Text>
+              <Ionicons name="chevron-forward" size={24} color="#8D9BB5" style={styles.scoreArrow} />
+            </View>
           </TouchableOpacity>
         </View>
 
@@ -69,16 +94,15 @@ const HomeAppBar = ({ navigation, username = "SSYOK" }) => {
             <Text style={styles.badgeText}>2</Text>
           </View>
         </TouchableOpacity>
-      </View>
+      </LinearGradient>
     </>
   );
 };
 
 const styles = StyleSheet.create({
   appBar: {
-    backgroundColor: '#242E49',
     paddingTop: 60,
-    paddingBottom: 20,
+    paddingBottom: 30,
     paddingHorizontal: 20,
     borderBottomLeftRadius: 35,
     borderBottomRightRadius: 35,
@@ -86,8 +110,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     overflow: 'hidden',
     width: '100%',
-    height: 260,
-    
+    height: 520,
   },
   dateContainer: {
     flexDirection: 'row',
@@ -100,60 +123,119 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginLeft: 8,
   },
-  profileSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  catImageContainer: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 15,
+    marginTop: 10,
   },
-  profileLeft: {
-    flexDirection: 'row',
+  catImage: {
+    width: 100,
+    height: 100,
+    // Apply a light glow effect to make the cat stand out against the dark background
+    shadowColor: '#FFFFFF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+  },
+  progressBarContainer: {
+    marginBottom: 15,
+  },
+  progressBarWrapper: {
+    position: 'relative',
+    height: 20,
+    marginBottom: 30,
+  },
+  progressBarBackground: {
+    height: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 5,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: '#8A3FFC',
+    borderRadius: 5,
+  },
+  percentageIndicator: {
+    position: 'absolute',
+    top: 0,
+    right: '6%',
+    transform: [{translateX: 12}],
     alignItems: 'center',
   },
-  profileImage: {
-    width: 60,
-    height: 60,
+  percentageArrow: {
+    width: 0,
+    height: 0,
+    borderLeftWidth: 8,
+    borderRightWidth: 8,
+    borderBottomWidth: 8,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderBottomColor: '#FFFFFF',
+    marginBottom: -1,
+  },
+  percentageBubble: {
+    backgroundColor: '#FFFFFF',
     borderRadius: 15,
-    backgroundColor: '#8D9BB5',
-  },
-  userInfo: {
-    marginLeft: 15,
-  },
-  greeting: {
-    color: 'white',
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  waveEmoji: {
-    fontSize: 22,
-  },
-  membershipRow: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  percentageContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 15,
   },
   percentageText: {
-    color: '#1167FE',
-    fontSize: 16,
+    color: '#333333',
+    fontSize: 14,
     fontWeight: 'bold',
+    marginRight: 5,
+  },
+  checkIcon: {
     marginLeft: 2,
   },
-  proMemberContainer: {
+  healthScoreCardContainer: {
+    marginBottom: 25,
+  },
+  healthScoreCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
   },
-  proMemberText: {
-    color: 'white',
-    fontSize: 16,
-    marginLeft: 5,
+  scoreBox: {
+    width: 70,
+    height: 70,
+    backgroundColor: '#8A3FFC',
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  profileRight: {
-    padding: 5,
+  scoreNumber: {
+    color: '#FFFFFF',
+    fontSize: 28,
+    fontWeight: 'bold',
+  },
+  scoreInfo: {
+    flex: 1,
+    marginLeft: 16,
+    position: 'relative',
+    paddingRight: 20,
+  },
+  scoreTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 4,
+  },
+  scoreDescription: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
+  },
+  scoreArrow: {
+    position: 'absolute',
+    right: 0,
+    top: '50%',
+    marginTop: -12,
   },
   searchContainer: {
     flexDirection: 'row',
@@ -162,7 +244,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     paddingHorizontal: 15,
     paddingVertical: 12,
-    marginBottom: 10,
+    marginBottom: 20,
   },
   searchInput: {
     flex: 1,
