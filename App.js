@@ -39,6 +39,7 @@ import AiHealthSuggestionScreen from './src/screens/health/AiHealthSuggestionScr
 import NutritionGuidanceScreen from './src/screens/health/NutritionGuidanceScreen';
 import NotificationScreen from './src/screens/NotificationScreen';
 import AIToolsScreen from './src/screens/AIToolsScreen';
+import AnimatedBackgroundScreen from './components/AnimatedBackground';
 
 // Import providers
 import { MedicationProvider } from './src/providers/MedicationProvider';
@@ -115,6 +116,10 @@ const HomeStack = () => {
         component={NotificationScreen} 
       />
       {/* Add other screens accessible from Home here */}
+      <Stack.Screen
+        name="AnimatedBackground"
+        component={AnimatedBackgroundScreen}
+      />
     </Stack.Navigator>
   );
 };
@@ -182,6 +187,7 @@ const MedicationStack = () => {
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
+    
   );
 };
 
