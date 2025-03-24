@@ -38,6 +38,7 @@ import HealthScoreScreen from './src/screens/health/HealthScoreScreen';
 import AiHealthSuggestionScreen from './src/screens/health/AiHealthSuggestionScreen';
 import NutritionGuidanceScreen from './src/screens/health/NutritionGuidanceScreen';
 import NotificationScreen from './src/screens/NotificationScreen';
+import AIToolsScreen from './src/screens/AIToolsScreen';
 
 // Import providers
 import { MedicationProvider } from './src/providers/MedicationProvider';
@@ -232,6 +233,38 @@ const ProfileStack = () => {
   );
 };
 
+// Create a stack navigator for the AI tab
+const AIStack = () => {
+  return (
+    <Stack.Navigator 
+      screenOptions={{
+        headerShown: false
+      }}
+    >
+      <Stack.Screen 
+        name="AIToolsScreen" 
+        component={AIToolsScreen} 
+      />
+      <Stack.Screen 
+        name="WellnessAIChatbot" 
+        component={WellnessAIChatbotScreen} 
+      />
+      <Stack.Screen 
+        name="VoiceAssistance" 
+        component={VoiceAssistanceScreen} 
+      />
+      <Stack.Screen 
+        name="TestGlucoseLevel" 
+        component={TestGlucoseLevelScreen} 
+      />
+      <Stack.Screen 
+        name="TranscribeAI" 
+        component={TranscribeAIScreen} 
+      />
+    </Stack.Navigator>
+  );
+};
+
 // Custom Tab Bar Component
 function CustomTabBar({ state, descriptors, navigation }) {
   const [translateValue] = useState(new Animated.Value(0));
@@ -244,7 +277,7 @@ function CustomTabBar({ state, descriptors, navigation }) {
   React.useEffect(() => {
     if (width === 0) return;
     
-    const tabWidth = width / 4;
+    const tabWidth = width / 3;
     // Calculate center position of each tab
     const targetPosition = tabWidth * state.index + (tabWidth / 2) - 30; // 30 is half the width of the circle
     
@@ -303,8 +336,6 @@ function CustomTabBar({ state, descriptors, navigation }) {
           let iconName;
           if (route.name === 'Home') {
             iconName = 'home';
-          } else if (route.name === 'Stats') {
-            iconName = 'bar-chart';
           } else if (route.name === 'AI') {
             iconName = 'smart-toy';
           } else if (route.name === 'Profile') {
@@ -366,11 +397,7 @@ const App = () => {
             />
             <Tab.Screen 
               name="AI" 
-              component={WellnessAIChatbotScreen} 
-            />
-            <Tab.Screen 
-              name="Stats" 
-              component={HomeScreen} 
+              component={AIStack} 
             />
             <Tab.Screen 
               name="Profile" 

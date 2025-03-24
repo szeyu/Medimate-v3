@@ -300,25 +300,21 @@ const TranscribeAIScreen = ({ navigation, route }) => {
   const renderInitialScreen = () => (
     <View style={styles.initialContainer}>
       <View style={styles.initialContent}>
-        {/* <Icon
-          name="mic"
-          size={120}
-          color="#4285F4"
-          style={styles.illustration}
-        /> */}
         <Text style={styles.initialTitle}>Transcribe Medical Conversations</Text>
         <Text style={styles.initialDescription}>
           Record and transcribe your medical conversations to get AI-powered summaries and key points.
         </Text>
       </View>
       
-      <TouchableOpacity 
-        style={styles.startRecordingButton}
-        onPress={handleStartRecording}
-      >
-        <Icon name="mic" size={24} color="#FFFFFF" />
-        <Text style={styles.startRecordingText}>Start Recording</Text>
-      </TouchableOpacity>
+      <View style={styles.buttonSafeArea}>
+        <TouchableOpacity 
+          style={styles.startRecordingButton}
+          onPress={handleStartRecording}
+        >
+          <Icon name="mic" size={24} color="#FFFFFF" />
+          <Text style={styles.startRecordingText}>Start Recording</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
   
@@ -417,14 +413,16 @@ const TranscribeAIScreen = ({ navigation, route }) => {
         </ScrollView>
       </View>
       
-      <TouchableOpacity 
-        style={styles.stopRecordingButton}
-        onPress={handleStopRecording}
-        disabled={isStoppingRecording}
-      >
-        <Icon name="stop" size={24} color="#FFFFFF" />
-        <Text style={styles.stopRecordingText}>Stop Recording</Text>
-      </TouchableOpacity>
+      <View style={styles.buttonSafeArea}>
+        <TouchableOpacity 
+          style={styles.stopRecordingButton}
+          onPress={handleStopRecording}
+          disabled={isStoppingRecording}
+        >
+          <Icon name="stop" size={24} color="#FFFFFF" />
+          <Text style={styles.stopRecordingText}>Stop Recording</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
   
@@ -442,7 +440,7 @@ const TranscribeAIScreen = ({ navigation, route }) => {
       ref={resultScrollViewRef}
       style={styles.resultContainer}
       showsVerticalScrollIndicator={true}
-      contentContainerStyle={{ paddingBottom: 40 }}
+      contentContainerStyle={{ paddingBottom: 100 }}
     >
       <View style={styles.resultHeader}>
         <Text style={styles.resultTitle}>{summary.title}</Text>
@@ -503,22 +501,24 @@ const TranscribeAIScreen = ({ navigation, route }) => {
         </ScrollView>
       </View>
       
-      <View style={styles.resultActions}>
-        <TouchableOpacity 
-          style={styles.saveButton}
-          onPress={handleSave}
-        >
-          <Icon name="save" size={20} color="#FFFFFF" />
-          <Text style={styles.saveButtonText}>Save Transcription</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.newRecordingButton}
-          onPress={handleNewRecording}
-        >
-          <Icon name="mic" size={20} color="#666666" />
-          <Text style={styles.newRecordingText}>New Recording</Text>
-        </TouchableOpacity>
+      <View style={styles.buttonSafeArea}>
+        <View style={styles.resultActions}>
+          <TouchableOpacity 
+            style={styles.saveButton}
+            onPress={handleSave}
+          >
+            <Icon name="save" size={24} color="#FFFFFF" />
+            <Text style={styles.saveButtonText}>Save Transcription</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.newRecordingButton}
+            onPress={handleNewRecording}
+          >
+            <Icon name="mic" size={24} color="#666666" />
+            <Text style={styles.newRecordingText}>New Recording</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </ScrollView>
   );
@@ -552,12 +552,14 @@ const TranscribeAIScreen = ({ navigation, route }) => {
             </Text>
           </View>
         </View>
-        
+      </View>
+      
+      <View style={styles.buttonSafeArea}>
         <TouchableOpacity 
           style={styles.confirmButton}
           onPress={handleConfirmSave}
         >
-          <Text style={styles.confirmButtonText}>Save</Text>
+          <Text style={styles.confirmButtonText}>Save Transcription</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -610,6 +612,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     justifyContent: 'space-between',
+    paddingBottom: 100,
   },
   initialContent: {
     flex: 1,
@@ -634,6 +637,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 24,
   },
+  buttonSafeArea: {
+    marginBottom: 30,
+  },
   startRecordingButton: {
     backgroundColor: '#1167FE',
     flexDirection: 'row',
@@ -651,6 +657,7 @@ const styles = StyleSheet.create({
   recordingContainer: {
     flex: 1,
     padding: 16,
+    paddingBottom: 100,
   },
   recordingHeader: {
     flexDirection: 'row',
@@ -860,7 +867,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   resultActions: {
-    marginBottom: 24,
+    marginBottom: 0,
   },
   saveButton: {
     backgroundColor: '#1167FE',
@@ -894,6 +901,8 @@ const styles = StyleSheet.create({
   savingContainer: {
     flex: 1,
     padding: 16,
+    paddingBottom: 100,
+    justifyContent: 'space-between',
   },
   saveForm: {
     backgroundColor: '#FFFFFF',
@@ -901,6 +910,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: '#EEEEEE',
+    marginBottom: 20,
   },
   saveTitle: {
     fontSize: 18,

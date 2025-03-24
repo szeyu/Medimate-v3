@@ -61,7 +61,7 @@ const TestGlucoseLevelScreen = ({ navigation }) => {
       </TouchableOpacity>
       <Text style={styles.appBarTitle}>Test Glucose Level</Text>
       <View style={styles.appBarRight}>
-        {/* You can add right-side icons here if needed */}
+        {/* Empty view for spacing */}
       </View>
     </View>
   );
@@ -226,11 +226,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#F5F7FA',
+    backgroundColor: '#FFFFFF',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 16,
     elevation: 2,
-    marginTop: 40,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEEEEE',
   },
   backButton: {
     padding: 8,
@@ -238,6 +243,7 @@ const styles = StyleSheet.create({
   appBarTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#333333',
   },
   appBarRight: {
     width: 40,
