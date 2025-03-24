@@ -268,7 +268,9 @@ const MedicationScreen = ({ navigation, route }) => {
           </View>
           
           <View style={styles.actionButton}>
-            <TouchableOpacity style={[styles.actionButtonInner, styles.assistanceButton]}>
+            <TouchableOpacity 
+              style={[styles.actionButtonInner, styles.assistanceButton]}
+              onPress={() => navigation.navigate('GetAssistance')}>
               <Icon name="medical-services" size={28} color="#FFFFFF" />
             </TouchableOpacity>
             <Text style={styles.actionButtonLabel}>Get Assistance</Text>

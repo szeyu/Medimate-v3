@@ -39,6 +39,7 @@ import AiHealthSuggestionScreen from './src/screens/health/AiHealthSuggestionScr
 import NutritionGuidanceScreen from './src/screens/health/NutritionGuidanceScreen';
 import NotificationScreen from './src/screens/NotificationScreen';
 import AIToolsScreen from './src/screens/AIToolsScreen';
+import GetAssistanceScreen from './src/screens/medication/GetAssistanceScreen';
 
 // Import providers
 import { MedicationProvider } from './src/providers/MedicationProvider';
@@ -114,6 +115,11 @@ const HomeStack = () => {
         name="NotificationScreen" 
         component={NotificationScreen} 
       />
+      <Stack.Screen
+        name="GetAssistance"
+        component={GetAssistanceScreen}
+        options={{ headerShown: false }}
+      />
       {/* Add other screens accessible from Home here */}
     </Stack.Navigator>
   );
@@ -170,6 +176,11 @@ const MedicationStack = () => {
       <Stack.Screen
         name="ScanMedication"
         component={ScanMedicationScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="GetAssistance"
+        component={GetAssistanceScreen}
         options={{ headerShown: false }}
       />
       {/* <Stack.Screen
