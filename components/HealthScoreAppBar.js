@@ -23,7 +23,7 @@ const HealthScoreAppBar = ({ navigation }) => {
                 <Ionicons name="arrow-back" size={20} color="white" />
             </TouchableOpacity>
                 <View style={styles.headerTopTitle}>
-                    <Text style={styles.headerTitle}>Asklepios Score</Text>
+                    <Text style={styles.headerTitle}>Medimate Score</Text>
                     <View style={styles.statusPill}>
                         <Text style={styles.statusText}>Normal</Text>
                     </View>

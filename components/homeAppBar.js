@@ -149,14 +149,14 @@ const HomeAppBar = ({ navigation, username = "SSYOK" }) => {
         </View>
 
         {/* Search Bar */}
-        <View style={styles.searchContainer}>
+        {/* <View style={styles.searchContainer}>
           <Ionicons name="search" size={20} color="#8D9BB5" />
           <TextInput
             style={styles.searchInput}
             placeholder="Search ..."
             placeholderTextColor="#8D9BB5"
           />
-        </View>
+        </View> */}
 
         {/* Notification Bell */}
         <TouchableOpacity 

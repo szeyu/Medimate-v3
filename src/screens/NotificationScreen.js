@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   FlatList,
-  Image,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
@@ -29,7 +28,15 @@ const NotificationScreen = ({ navigation }) => {
         read: false,
     },
     {
-        id: '3',
+      id: '3',
+      title: 'Alert',
+      message: 'Heart rate is high. Please check your health status or consult a doctor immediately.',
+      time: 'Yesterday',
+      type: 'Alert',
+      read: true,
+    },
+    {
+        id: '4',
         title: 'Medication Reminder',
         message: 'Time to take Vitamin C',
         time: 'Yesterday',
@@ -37,7 +44,7 @@ const NotificationScreen = ({ navigation }) => {
         read: true,
     },
     {
-        id: '4',
+        id: '5',
         title: 'Health Tip',
         message: 'Remember to drink at least 8 glasses of water today',
         time: '2 days ago',
@@ -62,6 +69,10 @@ const NotificationScreen = ({ navigation }) => {
       case 'tip':
         iconName = 'lightbulb';
         iconColor = '#FFC107';
+        break;
+      case 'Alert':
+        iconName = 'warning';
+        iconColor = '#DC3545';
         break;
       default:
         iconName = 'notifications';

@@ -93,8 +93,15 @@ const HomeScreen = ({ navigation }) => {
       showMedicationReminder();
     }, 10000); // 10 seconds
 
+    const healthAlertTimer = setTimeout(() => {
+      showHealthAlert();
+    }, 15000); // 15 seconds
+
     // Clean up the timer when component unmounts
-    return () => clearTimeout(notificationTimer);
+    return () => {
+      clearTimeout(notificationTimer);
+      clearTimeout(healthAlertTimer);
+    }
   }, []);
 
   const showMedicationReminder = () => {
@@ -112,6 +119,25 @@ const HomeScreen = ({ navigation }) => {
           onPress: () => navigation.navigate('Medications')
         }
       ]
+    );
+  };
+
+  const showHealthAlert = () => {
+    // Show a health alert notification
+    Alert.alert(
+      "🚨 Health Alert",
+      "Your blood pressure is 130 BPM, which is above normal. Please sit down and take deep breaths.",
+      [
+        {
+          text: "Dismiss",
+          style: "cancel"
+        },
+        { 
+          text: "View Details", 
+          onPress: () => navigation.navigate('BloodPressure')
+        }
+      ],
+      { cancelable: false }
     );
   };
 
