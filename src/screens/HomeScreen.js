@@ -23,6 +23,7 @@ import HomeAppBar from '../../components/homeAppBar';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import MaterialComIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 import MedicationManagementCard from '../widgets/MedicationManagementCard';
+import MentalStatusCard from '../widgets/MentalStatusCard';
 
 const bloodPressureCard = require('../../assets/blood-pressure-card.png');
 const heartRateCard = require('../../assets/heart-rate-card.png');
@@ -122,6 +123,8 @@ const HomeScreen = ({ navigation }) => {
         </View>
         <View style={styles.spacer} />
         <SmartMetric />
+        <View style={styles.spacer} />
+        <MentalStatusCard navigation={navigation} />
         <View style={styles.spacer} />
         <GlucoseLevelCard navigation={navigation} />
         <View style={styles.spacer} />

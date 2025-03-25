@@ -45,6 +45,10 @@ import HeartRateScreen from './src/screens/metrics/HeartRateScreen';
 import GetAssistanceScreen from './src/screens/medication/GetAssistanceScreen';
 import WelcomeScreen from './src/screens/WelcomeScreen.js'
 import LoginScreen from './src/screens/LoginScreen.js'
+import MentalGreatScreen from './src/screens/mentalStatus/MentalGreatScreen';
+import MentalNormalScreen from './src/screens/mentalStatus/MentalNormalScreen';
+import MentalPayAttentionScreen from './src/screens/mentalStatus/MentalPayAttentionScreen';
+import MentalOverloadScreen from './src/screens/mentalStatus/MentalOverloadScreen';
 
 // Import providers
 import { MedicationProvider } from './src/providers/MedicationProvider';
@@ -128,6 +132,22 @@ const HomeStack = () => {
         name="GetAssistance"
         component={GetAssistanceScreen}
         options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="MentalGreat"
+        component={MentalGreatScreen}
+      />
+      <Stack.Screen
+        name="MentalNormal"
+        component={MentalNormalScreen}
+      />
+      <Stack.Screen
+        name="MentalPayAttention"
+        component={MentalPayAttentionScreen}
+      />
+      <Stack.Screen
+        name="MentalOverload"
+        component={MentalOverloadScreen}
       />
       {/* Add other screens accessible from Home here */}
     </Stack.Navigator>
@@ -316,6 +336,22 @@ const HealthScoreStack = () => {
       <Stack.Screen
         name="HeartRate"
         component={HeartRateScreen}
+      />
+      <Stack.Screen
+        name="MentalGreat"
+        component={MentalGreatScreen}
+      />
+      <Stack.Screen
+        name="MentalNormal"
+        component={MentalNormalScreen}
+      />
+      <Stack.Screen
+        name="MentalPayAttention"
+        component={MentalPayAttentionScreen}
+      />
+      <Stack.Screen
+        name="MentalOverload"
+        component={MentalOverloadScreen}
       />
     </Stack.Navigator>
   )

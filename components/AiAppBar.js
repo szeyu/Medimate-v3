@@ -12,9 +12,9 @@ const AiAppBar = ({ navigation }) => {
         {/* Header Content */}
         <View style={styles.content}>
           {/* Back Button */}
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          {/* <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
             <Ionicons name="arrow-back" size={20} color="white" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           {/* Title */}
           <Text style={styles.title}>AI Health Tools</Text>
@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   title: {
-    marginTop: 16,
+    marginTop: 60,
     fontSize: 32,
     fontWeight: 'bold',
     color: 'white',

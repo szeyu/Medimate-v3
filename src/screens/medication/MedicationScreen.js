@@ -20,6 +20,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import CalendarStrip from 'react-native-calendar-strip';
 import * as Haptics from 'expo-haptics';
 import MedicalCard from '../../components/MedicalCard';
+import CustomAppBar from '../../../components/customAppBar';
 
 const { width } = Dimensions.get('window');
 
@@ -234,10 +235,11 @@ const MedicationScreen = ({ navigation, route }) => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+    <View style={styles.container}>
+      {/* <View style={styles.header}>
         <Text style={styles.headerTitle}>My Medications</Text>
-      </View>
+      </View> */}
+      <CustomAppBar/>
       
       <Animated.ScrollView 
         contentContainerStyle={styles.scrollContent}
@@ -359,7 +361,7 @@ const MedicationScreen = ({ navigation, route }) => {
           )}
         </View>
       </Animated.ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
