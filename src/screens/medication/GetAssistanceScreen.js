@@ -37,7 +37,7 @@ const supportOrganizations = [
     website: 'https://www.mps.org.my',
     services: ['Medication Assistance', 'Health Counseling', 'Prescription Review'],
     rating: 4.8,
-    // image: require('../../../assets/images/pharmacy1.jpg')
+    image: require('../../../assets/images/pharmacy1.jpg')
   },
   {
     id: '2',
@@ -49,7 +49,7 @@ const supportOrganizations = [
     website: 'https://www.moh.gov.my',
     services: ['Subsidized Medication', 'Health Screening', 'Chronic Disease Management'],
     rating: 4.5,
-    // image: require('../../../assets/images/clinic1.jpg')
+    image: require('../../../assets/images/clinic1.jpg')
   },
   {
     id: '3',
@@ -61,7 +61,7 @@ const supportOrganizations = [
     website: 'https://www.diabetes.org.my',
     services: ['Diabetes Medication Support', 'Education Programs', 'Support Groups'],
     rating: 4.7,
-    // image: require('../../../assets/images/ngo1.jpg')
+    image: require('../../../assets/images/ngo1.jpg')
   },
   {
     id: '4',
@@ -73,7 +73,7 @@ const supportOrganizations = [
     website: 'https://www.cancer.org.my',
     services: ['Cancer Medication Assistance', 'Patient Navigation', 'Support Services'],
     rating: 4.9,
-    // image: require('../../../assets/images/ngo2.jpg')
+    image: require('../../../assets/images/ngo2.jpg')
   },
   {
     id: '5',
@@ -85,7 +85,7 @@ const supportOrganizations = [
     website: 'https://www.perkeso.gov.my',
     services: ['Medical Benefits', 'Disability Support', 'Return to Work Program'],
     rating: 4.3,
-    // image: require('../../../assets/images/govt1.jpg')
+    image: require('../../../assets/images/govt1.jpg')
   }
 ];
 

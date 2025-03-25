@@ -510,6 +510,10 @@ const App = () => {
     setIsAuthenticated(false)
   }
 
+  const ProfileStackWrapper = (props) => {
+    return <ProfileStack {...props} handleLogOut={handleLogOut} />;
+  };
+
   return (
     <SafeAreaProvider>
       <MedicationProvider>
@@ -542,7 +546,7 @@ const App = () => {
             />
             <Tab.Screen 
               name="Profile" 
-              component={(props) => <ProfileStack {...props} handleLogOut={handleLogOut}/>} 
+              component={ProfileStackWrapper}
             />
           </Tab.Navigator>
           ):(
