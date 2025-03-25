@@ -13,7 +13,7 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import ProfileAppBar from '../../components/ProfileAppBar';
 
-const ProfileScreen = ({ navigation }) => {
+const ProfileScreen = ({ navigation, handleLogOut }) => {
   const [darkMode, setDarkMode] = React.useState(false);
   
   const toggleDarkMode = () => {
@@ -115,7 +115,7 @@ const ProfileScreen = ({ navigation }) => {
           </View>
           
           {renderSettingItem('logout', 'Sign Out', false, () => {
-            // Handle sign out logic here
+            handleLogOut();
             alert('Signing out...');
           })}
         </View>
