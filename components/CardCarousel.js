@@ -24,11 +24,6 @@ const styles = StyleSheet.create({
       justifyContent: "center",
       alignItems: "center",
       marginHorizontal: 0,
-      elevation: 5,
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 5 },
-      shadowOpacity: 0.6,
-      shadowRadius: 10,
       overflow: "hidden",
     },
     cardContent: {
