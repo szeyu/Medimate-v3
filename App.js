@@ -39,7 +39,8 @@ import AiHealthSuggestionScreen from './src/screens/health/AiHealthSuggestionScr
 import NutritionGuidanceScreen from './src/screens/health/NutritionGuidanceScreen';
 import NotificationScreen from './src/screens/NotificationScreen';
 import AIToolsScreen from './src/screens/AIToolsScreen';
-import AnimatedBackgroundScreen from './components/AnimatedBackground';
+import WelcomeScreen from './src/screens/WelcomeScreen.js'
+import LoginScreen from './src/screens/LoginScreen.js'
 
 // Import providers
 import { MedicationProvider } from './src/providers/MedicationProvider';
@@ -114,11 +115,6 @@ const HomeStack = () => {
       <Stack.Screen 
         name="NotificationScreen" 
         component={NotificationScreen} 
-      />
-      {/* Add other screens accessible from Home here */}
-      <Stack.Screen
-        name="AnimatedBackground"
-        component={AnimatedBackgroundScreen}
       />
     </Stack.Navigator>
   );
@@ -271,6 +267,25 @@ const AIStack = () => {
   );
 };
 
+const LoginStack = () => {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false
+      }}
+    >
+      <Stack.Screen
+        name="WelcomeScreen"
+        component={WelcomeScreen}
+      />
+      <Stack.Screen
+        name='HomeScreen'
+        component={HomeScreen}
+      ></Stack.Screen>
+    </Stack.Navigator>
+  );
+};
+
 // Custom Tab Bar Component
 function CustomTabBar({ state, descriptors, navigation }) {
   const [translateValue] = useState(new Animated.Value(0));
@@ -387,11 +402,18 @@ function CustomTabBar({ state, descriptors, navigation }) {
 }
 
 const App = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const handleLogin = () => {
+    setIsAuthenticated(true)
+  }
+
   return (
     <SafeAreaProvider>
       <MedicationProvider>
         <NavigationContainer>
-          <Tab.Navigator
+          {isAuthenticated ? (
+            <Tab.Navigator
             tabBar={props => <CustomTabBar {...props} />}
             screenOptions={{
               headerShown: false,
@@ -410,6 +432,9 @@ const App = () => {
               component={ProfileStack} 
             />
           </Tab.Navigator>
+          ):(
+            <LoginStack />
+          )}
         </NavigationContainer>
       </MedicationProvider>
     </SafeAreaProvider>
