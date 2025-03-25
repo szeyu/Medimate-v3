@@ -267,7 +267,7 @@ const AIStack = () => {
   );
 };
 
-const LoginStack = () => {
+const LoginStack = ({handleLogin}) => {
   return (
     <Stack.Navigator
       screenOptions={{
@@ -276,7 +276,7 @@ const LoginStack = () => {
     >
       <Stack.Screen
         name="WelcomeScreen"
-        component={WelcomeScreen}
+        component={(props) => <WelcomeScreen {...props} handleLogin={handleLogin}/>}
       />
       <Stack.Screen
         name='HomeScreen'
@@ -433,7 +433,7 @@ const App = () => {
             />
           </Tab.Navigator>
           ):(
-            <LoginStack />
+            <LoginStack handleLogin={handleLogin}/>
           )}
         </NavigationContainer>
       </MedicationProvider>

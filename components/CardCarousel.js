@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
     },
   });
 
-const data = (navigation) => [
+const data = (navigation, handleLogin) => [
     {
       id: "1", 
       title: "Card 1", 
@@ -102,11 +102,7 @@ const data = (navigation) => [
           With our AI-powered transcriber, {"\n"}you never miss a word.
           </Text>
         </View>
-        <View style={{ flex: 1, justifyContent: "flex-start", alignItems: "centre"}}>
-          {/* <TouchableOpacity style={styles.squareBox}>
-            <Text style={styles.customText}>GO!</Text>
-          </TouchableOpacity> */}
-        </View>
+        <View style={{ flex: 1, justifyContent: "flex-start", alignItems: "centre"}}/>
       </View>
     },
     { 
@@ -127,11 +123,7 @@ const data = (navigation) => [
           Always forgetting when to take meds?{"\n"} Fred not, we got you covered.
           </Text>
         </View>
-        <View style={{ flex: 1, justifyContent: "flex-start", alignItems: "centre"}}>
-          {/* <TouchableOpacity style={styles.squareBox}>
-            <Text style={styles.customText}>GO!</Text>
-          </TouchableOpacity> */}
-        </View>
+        <View style={{ flex: 1, justifyContent: "flex-start", alignItems: "centre"}}/>
     </View>
     },
     { 
@@ -153,7 +145,7 @@ const data = (navigation) => [
         </Text>
       </View>
       <View style={{ flex: 1, justifyContent: "flex-start", alignItems: "centre"}}>
-          <TouchableOpacity style={styles.squareBox} onPress={() => navigation.navigate('HomeScreen')}>
+          <TouchableOpacity style={styles.squareBox} onPress={handleLogin}>
             <Text style={styles.customText}>GO!</Text>
           </TouchableOpacity>
       </View>
@@ -161,13 +153,13 @@ const data = (navigation) => [
     },
   ];
 
-const CardCarousel = ({ navigation }) => {
+const CardCarousel = ({ navigation, handleLogin }) => {
   const scrollX = useRef(new Animated.Value(0)).current;
 
   return (
     <View style={styles.container}>
       <Animated.FlatList
-        data={data(navigation)}
+        data={data(navigation, handleLogin)}
         keyExtractor={(item) => item.id}
         horizontal
         showsHorizontalScrollIndicator={false}

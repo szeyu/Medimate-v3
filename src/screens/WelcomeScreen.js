@@ -4,11 +4,11 @@ import { useNavigation } from "@react-navigation/native";
 import CardCarousel from "../../components/CardCarousel";
 import HomeScreen from "./HomeScreen";
 
-const OnboardingScreen = () => {
+const WelcomeScreen = ({ handleLogin }) => {
   const navigation = useNavigation();
 
   return (
-    <CardCarousel navigation={navigation}/>
+    <CardCarousel navigation={navigation} handleLogin={handleLogin}/>
   );
 };
 
@@ -84,4 +84,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default OnboardingScreen;
+export default WelcomeScreen;
