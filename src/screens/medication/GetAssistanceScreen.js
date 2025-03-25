@@ -22,6 +22,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { FontAwesome5, MaterialCommunityIcons, Ionicons, Feather } from '@expo/vector-icons';
 import { useMedications } from '../../providers/MedicationProvider';
 import * as Haptics from 'expo-haptics';
+import { Scroll } from 'lucide-react-native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -98,7 +99,7 @@ const pharmacyPrices = [
     address: 'Lot G-25, Ground Floor, Mid Valley Megamall, 59200 Kuala Lumpur',
     phone: '+60322829385',
     rating: 4.6,
-    // image: require('../../../assets/images/pharmacy2.jpg'),
+    image: require('../../../assets/images/guardian.jpg'),
     prices: [
       { medication: 'Vitamin C 100mg', price: 25.50, discount: '0%', stock: 'In Stock' },
       { medication: 'Painexal 500mg', price: 87.18, discount: '0%', stock: 'In Stock' },
@@ -113,7 +114,7 @@ const pharmacyPrices = [
     address: 'Lot 1F-18, 1st Floor, Suria KLCC, 50088 Kuala Lumpur',
     phone: '+60323822828',
     rating: 4.5,
-    // image: require('../../../assets/images/pharmacy3.jpg'),
+    image: require('../../../assets/images/watsons.jpg'),
     prices: [
       { medication: 'Vitamin C 100mg', price: 22.90, discount: '10%', stock: 'In Stock' },
       { medication: 'Painexal 500mg', price: 82.50, discount: '5%', stock: 'Limited Stock' },
@@ -128,7 +129,7 @@ const pharmacyPrices = [
     address: 'G-13, Ground Floor, Pavilion KL, 168, Jalan Bukit Bintang, 55100 Kuala Lumpur',
     phone: '+60321418822',
     rating: 4.7,
-    // image: require('../../../assets/images/pharmacy4.jpg'),
+    image: require('../../../assets/images/caringPharmacy.jpg'),
     prices: [
       { medication: 'Vitamin C 100mg', price: 20.80, discount: '15%', stock: 'In Stock' },
       { medication: 'Painexal 500mg', price: 79.90, discount: '8%', stock: 'In Stock' },
@@ -143,7 +144,7 @@ const pharmacyPrices = [
     address: 'Lot 1.67, Level 1, Sunway Pyramid Shopping Mall, 47500 Petaling Jaya, Selangor',
     phone: '+60356371388',
     rating: 4.4,
-    // image: require('../../../assets/images/pharmacy5.jpg'),
+    image: require('../../../assets/images/AAPharmacy.jpg'),
     prices: [
       { medication: 'Vitamin C 100mg', price: 23.40, discount: '5%', stock: 'In Stock' },
       { medication: 'Painexal 500mg', price: 85.30, discount: '2%', stock: 'In Stock' },
@@ -158,7 +159,7 @@ const pharmacyPrices = [
     address: 'G-12, Ground Floor, The Gardens Mall, 59200 Kuala Lumpur',
     phone: '+60322876366',
     rating: 4.8,
-    // image: require('../../../assets/images/pharmacy6.jpg'),
+    image: require('../../../assets/images/healthLanePharmacy.jpg'),
     prices: [
       { medication: 'Vitamin C 100mg', price: 21.20, discount: '12%', stock: 'In Stock' },
       { medication: 'Painexal 500mg', price: 78.40, discount: '10%', stock: 'In Stock' },
@@ -825,46 +826,54 @@ const GetAssistanceScreen = ({ navigation }) => {
       {/* Add the search and filter bar */}
       {!isLoading && renderSearchAndFilterBar()}
       
-      <View style={styles.tabContainer}>
-        <TouchableOpacity 
-          style={[
-            styles.tabButton,
-            activeTab === 'support' && styles.activeTabButton
-          ]}
-          onPress={() => handleTabChange('support')}
+      <View style={styles.tabContainerWrapper}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.tabScrollContainer}
         >
-          <FontAwesome5 
-            name="hands-helping" 
-            size={16} 
-            color={activeTab === 'support' ? '#8A3FFC' : '#666'} 
-          />
-          <Text style={[
-            styles.tabText,
-            activeTab === 'support' && styles.activeTabText
-          ]}>
-            Support Organizations
-          </Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={[
-            styles.tabButton,
-            activeTab === 'prices' && styles.activeTabButton
-          ]}
-          onPress={() => handleTabChange('prices')}
-        >
-          <MaterialCommunityIcons 
-            name="pill" 
-            size={18} 
-            color={activeTab === 'prices' ? '#8A3FFC' : '#666'} 
-          />
-          <Text style={[
-            styles.tabText,
-            activeTab === 'prices' && styles.activeTabText
-          ]}>
-            Price Comparison
-          </Text>
-        </TouchableOpacity>
+          <View style={styles.tabContainer}>
+            <TouchableOpacity 
+              style={[
+                styles.tabButton,
+                activeTab === 'support' && styles.activeTabButton
+              ]}
+              onPress={() => handleTabChange('support')}
+            >
+              <FontAwesome5 
+                name="hands-helping" 
+                size={16} 
+                color={activeTab === 'support' ? '#8A3FFC' : '#666'} 
+              />
+              <Text style={[
+                styles.tabText,
+                activeTab === 'support' && styles.activeTabText
+              ]}>
+                Support Organizations
+              </Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[
+                styles.tabButton,
+                activeTab === 'prices' && styles.activeTabButton
+              ]}
+              onPress={() => handleTabChange('prices')}
+            >
+              <MaterialCommunityIcons 
+                name="pill" 
+                size={18} 
+                color={activeTab === 'prices' ? '#8A3FFC' : '#666'} 
+              />
+              <Text style={[
+                styles.tabText,
+                activeTab === 'prices' && styles.activeTabText
+              ]}>
+                Price Comparison
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
       </View>
       
       <View style={styles.contentContainer}>
@@ -875,9 +884,13 @@ const GetAssistanceScreen = ({ navigation }) => {
             alignItems: 'center', 
             backgroundColor: '#E5E7EB' 
           }}>
-            <Text style={{ fontSize: 16, color: '#666' }}>Map View</Text>
+            {/* <Text style={{ fontSize: 16, color: '#666' }}>Map View</Text> */}
             <Text style={{ fontSize: 12, color: '#999', marginTop: 4 }}>
-              (Map would be displayed here in a real app)
+              {/* (Map would be displayed here in a real app) */}
+              <Image 
+                source={require('../../../assets/images/map.png')}
+                style={{ width: 600, height: 600, marginTop: 8 }}
+              />
             </Text>
           </View>
         </View>
@@ -997,13 +1010,18 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
     backgroundColor: '#FFFFFF',
   },
-  tabContainer: {
-    flexDirection: 'row',
+  tabContainerWrapper: {
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 16,
-    paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
+  },
+  tabScrollContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    paddingVertical: 4,
   },
   tabButton: {
     flexDirection: 'row',
