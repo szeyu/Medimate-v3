@@ -223,7 +223,7 @@ const MedicationStack = () => {
 };
 
 // Create a stack navigator for the Profile tab
-const ProfileStack = () => {
+const ProfileStack = ({handleLogOut}) => {
   return (
     <Stack.Navigator
       screenOptions={{
@@ -232,7 +232,7 @@ const ProfileStack = () => {
     >
       <Stack.Screen 
         name="ProfileScreen" 
-        component={ProfileScreen} 
+        component={(props) => <ProfileScreen {...props} handleLogOut={handleLogOut}/>} 
       />
       <Stack.Screen 
         name="PersonalInfo" 
@@ -265,6 +265,10 @@ const ProfileStack = () => {
       <Stack.Screen 
         name="ContactUs" 
         component={ContactUsScreen} 
+      />
+      <Stack.Screen 
+        name="WelcomeScreen"
+        component={WelcomeScreen}
       />
     </Stack.Navigator>
   );
@@ -502,6 +506,10 @@ const App = () => {
     setIsAuthenticated(true)
   }
 
+  const handleLogOut = () => {
+    setIsAuthenticated(false)
+  }
+
   return (
     <SafeAreaProvider>
       <MedicationProvider>
@@ -534,7 +542,7 @@ const App = () => {
             />
             <Tab.Screen 
               name="Profile" 
-              component={ProfileStack} 
+              component={(props) => <ProfileStack {...props} handleLogOut={handleLogOut}/>} 
             />
           </Tab.Navigator>
           ):(
