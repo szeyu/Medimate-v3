@@ -46,6 +46,7 @@ const PillTakenScreen = ({ route, navigation }) => {
     
     // Navigate back to MedicationList screen after a delay
     setTimeout(() => {
+      setShowSuccess(false);
       navigation.navigate('MedicationList');
     }, 2000);
   };
