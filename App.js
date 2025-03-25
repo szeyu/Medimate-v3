@@ -39,6 +39,10 @@ import AiHealthSuggestionScreen from './src/screens/health/AiHealthSuggestionScr
 import NutritionGuidanceScreen from './src/screens/health/NutritionGuidanceScreen';
 import NotificationScreen from './src/screens/NotificationScreen';
 import AIToolsScreen from './src/screens/AIToolsScreen';
+import BloodPressureScreen from './src/screens/metrics/BloodPressureScreen';
+import BloodPressureStatsScreen from './src/screens/metrics/BloodPressureStatsScreen';
+import HeartRateScreen from './src/screens/metrics/HeartRateScreen';
+import GetAssistanceScreen from './src/screens/medication/GetAssistanceScreen';
 import WelcomeScreen from './src/screens/WelcomeScreen.js'
 import LoginScreen from './src/screens/LoginScreen.js'
 
@@ -75,8 +79,8 @@ const HomeStack = () => {
         component={AddMedicationScreen}
       />
       <Stack.Screen
-        name="MedicationSchedule"
-        component={MedicationScheduleScreen}
+        name="MedicationList"
+        component={MedicationScreen}
       />
       <Stack.Screen
         name="MedicationDetail"
@@ -116,6 +120,16 @@ const HomeStack = () => {
         name="NotificationScreen" 
         component={NotificationScreen} 
       />
+      <Stack.Screen
+        name="BloodPressure"
+        component={BloodPressureScreen}
+      />
+      <Stack.Screen
+        name="GetAssistance"
+        component={GetAssistanceScreen}
+        options={{ headerShown: false }}
+      />
+      {/* Add other screens accessible from Home here */}
     </Stack.Navigator>
   );
 };
@@ -153,11 +167,11 @@ const MedicationStack = () => {
         component={MedicationDetailScreen} 
         options={{ headerShown: false }}
       />
-      <Stack.Screen 
+      {/* <Stack.Screen 
         name="MedicationSchedule" 
         component={MedicationScheduleScreen} 
         options={{ headerShown: false }}
-      />
+      /> */}
       <Stack.Screen
         name="Scan"
         component={ScanScreen}
@@ -173,15 +187,16 @@ const MedicationStack = () => {
         component={ScanMedicationScreen}
         options={{ headerShown: false }}
       />
-      <Stack.Screen 
-        name="HomeScreen" 
-        component={HomeScreen} 
-      />
       <Stack.Screen
+        name="GetAssistance"
+        component={GetAssistanceScreen}
+        options={{ headerShown: false }}
+      />
+      {/* <Stack.Screen
         name="MedicationDescription"
         component={MedicationDescriptionScreen}
         options={{ headerShown: false }}
-      />
+      /> */}
     </Stack.Navigator>
     
   );
@@ -263,9 +278,48 @@ const AIStack = () => {
         name="TranscribeAI" 
         component={TranscribeAIScreen} 
       />
+      <Stack.Screen
+        name="AiHealthSuggestion"
+        component={AiHealthSuggestionScreen}
+      />
+      <Stack.Screen
+        name="NutritionGuidance"
+        component={NutritionGuidanceScreen}
+      />
     </Stack.Navigator>
   );
 };
+
+const HealthScoreStack = () => {
+  return (
+    <Stack.Navigator 
+      screenOptions={{
+        headerShown: false
+      }}
+    >
+      <Stack.Screen
+        name="HealthScore"
+        component={HealthScoreScreen}
+      />
+      <Stack.Screen
+        name="NutritionGuidance"
+        component={NutritionGuidanceScreen}
+      />
+      <Stack.Screen
+        name="BloodPressure"
+        component={BloodPressureScreen}
+      />
+      <Stack.Screen
+        name="BloodPressureStats"
+        component={BloodPressureStatsScreen}
+      />
+      <Stack.Screen
+        name="HeartRate"
+        component={HeartRateScreen}
+      />
+    </Stack.Navigator>
+  )
+}
 
 const LoginStack = ({handleLogin}) => {
   return (
@@ -298,7 +352,7 @@ function CustomTabBar({ state, descriptors, navigation }) {
   React.useEffect(() => {
     if (width === 0) return;
     
-    const tabWidth = width / 3;
+    const tabWidth = width / 5;
     // Calculate center position of each tab
     const targetPosition = tabWidth * state.index + (tabWidth / 2) - 30; // 30 is half the width of the circle
     
@@ -357,8 +411,12 @@ function CustomTabBar({ state, descriptors, navigation }) {
           let iconName;
           if (route.name === 'Home') {
             iconName = 'home';
+          } else if (route.name === 'Stats') {
+            iconName = 'bar-chart';
           } else if (route.name === 'AI') {
             iconName = 'smart-toy';
+          } else if (route.name === 'Medications') {
+            iconName = 'medication';
           } else if (route.name === 'Profile') {
             iconName = 'person';
           }
@@ -417,15 +475,26 @@ const App = () => {
             tabBar={props => <CustomTabBar {...props} />}
             screenOptions={{
               headerShown: false,
+              contentStyle: {
+                paddingBottom: 60,
+              },
             }}
           >
             <Tab.Screen 
               name="Home" 
               component={HomeStack} 
             />
+            <Tab.Screen
+              name="Stats"
+              component={HealthScoreStack}
+            />
             <Tab.Screen 
               name="AI" 
               component={AIStack} 
+            />
+            <Tab.Screen
+              name="Medications"
+              component={MedicationStack}
             />
             <Tab.Screen 
               name="Profile" 
@@ -443,7 +512,6 @@ const App = () => {
 
 const styles = StyleSheet.create({
   tabBarContainer: {
-    position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
@@ -467,7 +535,7 @@ const styles = StyleSheet.create({
   },
   activeTabCircleIndicator: {
     position: 'absolute',
-    top: -20,
+    top: -15,
     left: 0,
     width: 60,
     height: 60,
@@ -488,18 +556,18 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 10,
+    paddingTop: 5,
     zIndex: 1,
   },
   iconContainer: {
-    height: 30,
-    width: 30,
+    height: 24,
+    width: 24,
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 4,
   },
   tabLabel: {
     fontSize: 12,
-    marginTop: 4,
   },
 });
 

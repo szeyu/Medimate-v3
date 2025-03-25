@@ -229,6 +229,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 16,
     paddingVertical: 16,
+    top: 50,
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },

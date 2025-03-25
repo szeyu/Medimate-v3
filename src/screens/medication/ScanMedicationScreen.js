@@ -7,85 +7,48 @@ import {
   FlatList,
   Image,
   SafeAreaView,
-  ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { useMedications } from '../../providers/MedicationProvider';
+import { Ionicons } from '@expo/vector-icons';
 
 const ScanMedicationScreen = ({ navigation }) => {
-  const { medications, isLoading } = useMedications();
+  // Sample medications that could be scanned
+  const sampleMedications = [
+    {
+      id: '1',
+      name: 'Vitamin B12',
+      dosage: '50mcg',
+      description: 'Supports red blood cell production',
+      image: require('../../../assets/medicationSample.png')
+    },
+    {
+      id: '2',
+      name: 'Amoxicillin',
+      dosage: '500mg',
+      description: 'Antibiotic for bacterial infections',
+      image: require('../../../assets/medicationSample.png')
+    },
+    {
+      id: '3',
+      name: 'Lisinopril',
+      dosage: '10mg',
+      description: 'Used to treat high blood pressure',
+      image: require('../../../assets/medicationSample.png')
+    }
+  ];
 
-  const renderMedicationCard = ({ item }) => (
-    <TouchableOpacity
-      style={styles.medicationCard}
-      onPress={() => navigation.navigate('Scan')}
+  const renderMedicationItem = ({ item }) => (
+    <TouchableOpacity 
+      style={styles.medicationItem}
+      onPress={() => navigation.navigate('MedicationDescription', { medication: item })}
     >
-      <View style={styles.cardContent}>
-        <View style={styles.medicationIcon}>
-          <Icon name="medication" size={24} color="#1167FE" />
-        </View>
-        <View style={styles.medicationInfo}>
-          <Text style={styles.medicationName}>{item.name}</Text>
-          <Text style={styles.medicationDetails}>{item.dosage} • {item.frequency}</Text>
-          <Text style={styles.medicationTime}>{item.time}</Text>
-        </View>
-        <View style={styles.statusContainer}>
-          <View style={[
-            styles.statusIndicator,
-            { backgroundColor: item.isActive ? '#4CAF50' : '#F44336' }
-          ]} />
-          <Text style={styles.statusText}>
-            {item.isActive ? 'Active' : 'Inactive'}
-          </Text>
-        </View>
+      <Image source={item.image} style={styles.medicationImage} />
+      <View style={styles.medicationInfo}>
+        <Text style={styles.medicationName}>{item.name} {item.dosage}</Text>
+        <Text style={styles.medicationDescription}>{item.description}</Text>
       </View>
+      <Icon name="chevron-right" size={24} color="#8A3FFC" />
     </TouchableOpacity>
-  );
-
-  const renderEmptyState = () => (
-    <View style={styles.emptyContainer}>
-      <View style={styles.emptyImageContainer}>
-        <Image
-          source={require('../../../assets/scannedMedication.png')}
-          style={styles.emptyImage}
-          resizeMode="contain"
-        />
-      </View>
-      <Text style={styles.emptyTitle}>Amoxiciline</Text>
-      <Text style={styles.emptyDescription}>
-        Successfully analyzed !!
-      </Text>
-      {/* Medication Info Icons */}
-      <View style={styles.medicationInfoContainer}>
-        <View style={styles.infoItem}>
-          <View style={[styles.infoIcon, { backgroundColor: '#242E49' }]}>
-            <Icon name="warning" size={24} color="#FFFFFF" />
-          </View>
-          <Text style={styles.infoText}>High Risk</Text>
-        </View>
-        
-        <View style={styles.infoItem}>
-          <View style={[styles.infoIcon, { backgroundColor: '#FA4E5E' }]}>
-            <Icon name="shield" size={24} color="#FFFFFF" />
-          </View>
-          <Text style={styles.infoText}>Antibiotic</Text>
-        </View>
-        
-        <View style={styles.infoItem}>
-          <View style={[styles.infoIcon, { backgroundColor: '#893FFC' }]}>
-            <Icon name="schedule" size={24} color="#FFFFFF" />
-          </View>
-          <Text style={styles.infoText}>2× Daily</Text>
-        </View>
-      </View>
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => navigation.navigate('MedicationDescription')}
-      >
-        <Text style={styles.seeDetailsButtonText}>See Details</Text>
-        <Icon name="arrow-forward" size={24} color="#FFFFFF" />
-      </TouchableOpacity>
-    </View>
   );
 
   return (
@@ -93,28 +56,40 @@ const ScanMedicationScreen = ({ navigation }) => {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Icon name="arrow-back" size={24} color="#333" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Scan Medication</Text>
+        <View style={styles.backButton} />
+      </View>
+
+      <View style={styles.infoContainer}>
+        <Icon name="info-outline" size={24} color="#8A3FFC" style={styles.infoIcon} />
+        <Text style={styles.infoText}>
+          Scan your medication label to automatically add it to your schedule
+        </Text>
+      </View>
+
+      <View style={styles.scanButtonContainer}>
+        <TouchableOpacity 
+          style={styles.scanButton}
           onPress={() => navigation.navigate('Scan')}
         >
-          <Icon name="arrow-back" size={20} color="#000000" />
+          <Ionicons name="camera" size={24} color="#FFFFFF" style={styles.scanIcon} />
+          <Text style={styles.scanButtonText}>Scan Medication Label</Text>
         </TouchableOpacity>
       </View>
-      
-      {isLoading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#1167FE" />
-        </View>
-      ) : (
+
+      <View style={styles.recentContainer}>
+        <Text style={styles.recentTitle}>Recently Scanned Medications</Text>
         <FlatList
-          data={medications}
-          renderItem={renderMedicationCard}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={[
-            styles.listContainer,
-            medications.length === 0 && styles.emptyListContainer
-          ]}
-          ListEmptyComponent={renderEmptyState}
+          data={sampleMedications}
+          renderItem={renderMedicationItem}
+          keyExtractor={item => item.id}
+          contentContainerStyle={styles.medicationList}
         />
-      )}
+      </View>
     </SafeAreaView>
   );
 };
@@ -122,178 +97,109 @@ const ScanMedicationScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F5F9',
+    backgroundColor: '#F5F7FA',
   },
   header: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#FFFFFF',
   },
   backButton: {
     width: 40,
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5F5F5',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(2, 1, 1, 0.2)',
   },
-  listContainer: {
-    padding: 16,
-    paddingBottom: 40,
-  },
-  emptyListContainer: {
-    flexGrow: 1,
-    justifyContent: 'center',
-  },
-  medicationCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  cardContent: {
-    flexDirection: 'row',
-    padding: 16,
-    alignItems: 'center',
-  },
-  medicationIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(17, 103, 254, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  medicationInfo: {
-    flex: 1,
-    marginLeft: 16,
-  },
-  medicationName: {
+  headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#333',
   },
-  medicationDetails: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 4,
-  },
-  medicationTime: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 2,
-  },
-  statusContainer: {
+  infoContainer: {
     flexDirection: 'row',
+    backgroundColor: '#F0E6FF',
+    padding: 16,
+    marginHorizontal: 20,
+    marginTop: 20,
+    borderRadius: 12,
     alignItems: 'center',
   },
-  statusIndicator: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginRight: 6,
+  infoIcon: {
+    marginRight: 12,
   },
-  statusText: {
-    fontSize: 14,
-    color: '#666',
-  },
-  emptyContainer: {
+  infoText: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+    fontSize: 14,
+    color: '#333',
+    lineHeight: 20,
   },
-  emptyImageContainer: {
-    width: 200,
-    height: 200,
-    marginBottom: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5F7FA',
-    borderRadius: 100,
-  },
-  emptyImage: {
-    width: 300,
-    height: 300,
-  },
-  emptyTitle: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginTop: 48,
-    color: '#333333',
-  },
-  emptyDescription: {
-    fontSize: 18,
-    color: '#6B778F',
-    textAlign: 'center',
-    marginTop: 8,
-    marginBottom: 24,
-    maxWidth: '80%',
-  },
-  addButton: {
-    flexDirection: 'row',
-    backgroundColor: '#1167FE',
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '90%',
-  },
-  scanButton: {
-    flexDirection: 'row',
-    backgroundColor: '#1167FE',
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '90%',
+  scanButtonContainer: {
+    marginHorizontal: 20,
     marginTop: 20,
   },
-  seeDetailsButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
+  scanButton: {
+    backgroundColor: '#8A3FFC',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    borderRadius: 12,
+  },
+  scanIcon: {
     marginRight: 8,
   },
   scanButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
-    marginRight: 8,
   },
-  loadingContainer: {
+  recentContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    marginTop: 24,
+    paddingHorizontal: 20,
   },
-  medicationInfoContainer: {
+  recentTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 16,
+  },
+  medicationList: {
+    paddingBottom: 20,
+  },
+  medicationItem: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-    marginBottom: 30,
-  },
-  infoItem: {
     alignItems: 'center',
-    width: '30%',
-  },
-  infoIcon: {
-    width: 56,
-    height: 56,
+    backgroundColor: '#FFFFFF',
+    padding: 16,
     borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  infoText: {
+  medicationImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 8,
+    marginRight: 16,
+  },
+  medicationInfo: {
+    flex: 1,
+  },
+  medicationName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 4,
+  },
+  medicationDescription: {
     fontSize: 14,
-    color: '#718096',
-    textAlign: 'center',
+    color: '#666',
   },
 });
 
