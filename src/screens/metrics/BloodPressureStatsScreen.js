@@ -325,7 +325,7 @@ const BloodPressureStatsScreen = ({ navigation }) => {
                   <MaterialCommunityIcons name="bone" size={24} color="#00BFB3"/>
                 </View>
                 <View style={styles.riskInfoContainer}>
-                  <Text style={styles.riskTitle}>Kidney Disease</Text>
+                  <Text style={styles.riskTitle}>Bone Disease</Text>
                   <Text style={styles.riskDescription}>Low Risk. Be Preventive.</Text>
                 </View>
                 <View style={[styles.riskBadge, { backgroundColor: '#00BFB3' }]}>

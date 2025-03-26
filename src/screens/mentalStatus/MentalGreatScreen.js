@@ -32,7 +32,7 @@ const MentalGreatScreen = ({ navigation }) => {
           
           {/* Main Card */}
           <View style={styles.mainCard}>
-            <Text style={styles.greeting}>Hi, Alex, here's your daily score</Text>
+            <Text style={styles.greeting}>Hi, Ssyok, here's your daily score</Text>
             <Text style={styles.scoreText}>Great</Text>
             
             {/* Score Indicator */}

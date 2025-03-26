@@ -95,7 +95,7 @@ const HomeScreen = ({ navigation }) => {
 
     const healthAlertTimer = setTimeout(() => {
       showHealthAlert();
-    }, 15000); // 15 seconds
+    }, 20000); // 15 seconds
 
     // Clean up the timer when component unmounts
     return () => {
@@ -126,7 +126,7 @@ const HomeScreen = ({ navigation }) => {
     // Show a health alert notification
     Alert.alert(
       "🚨 Health Alert",
-      "Your blood pressure is 130 BPM, which is above normal. Please sit down and take deep breaths.",
+      "Your blood pressure is 130/80 mmHg, which is above normal. Please sit down and take deep breaths.",
       [
         {
           text: "Dismiss",
