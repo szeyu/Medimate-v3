@@ -5,6 +5,9 @@ import { ASSEMBLYAI_API_KEY } from "@env";
 // AssemblyAI API key - Using environment variable for security
 const API_KEY = ASSEMBLYAI_API_KEY;
 
+// Backend API URL - Should match your backend server
+const BACKEND_API_URL = "http://0.0.0.0:8000"; // Update this to your backend URL or IP address
+
 /**
  * Uploads an audio file to AssemblyAI for transcription
  * @param {string} audioUri - The local URI of the audio file to transcribe
@@ -233,4 +236,37 @@ export const processTranscriptionData = (transcription) => {
     text: formattedText,
     utterances,
   };
+};
+
+/**
+ * Analyzes a transcription using Gemini AI via the backend API
+ * @param {string} transcriptionText - The text to analyze
+ * @returns {Promise<object>} - The analysis results with key points
+ */
+export const analyzeTranscriptionWithGeminiAI = async (transcriptionText) => {
+  try {
+    console.log("Analyzing transcription with Gemini AI");
+
+    const response = await axios.post(
+      `${BACKEND_API_URL}/analyze-transcription`,
+      {
+        transcription: transcriptionText,
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Error analyzing transcription with Gemini AI:", error);
+
+    // For development: provide a fallback for testing
+    if (__DEV__) {
+      console.log("DEV MODE: Returning mock Gemini AI analysis");
+      return {
+        key_points:
+          "• Patient reports joint pain, especially in the morning\n• Symptoms include swelling and stiffness in fingers and wrists\n• Doctor suspects inflammatory arthritis\n• Blood tests recommended to check for inflammation markers",
+      };
+    }
+
+    throw error;
+  }
 };

@@ -19,6 +19,7 @@ import { Audio } from "expo-av";
 import {
   transcribeAudio,
   processTranscriptionData,
+  analyzeTranscriptionWithGeminiAI,
 } from "../services/TranscriptionService";
 // import * as Clipboard from 'expo-clipboard';
 
@@ -296,9 +297,18 @@ const TranscribeAIScreen = ({ navigation, route }) => {
         // Update the UI with the transcription results
         setTranscription(processedTranscription.text);
 
-        // For the demo, generate some basic summary points from the transcription
+        // Process the transcription with Gemini AI
         if (processedTranscription.text) {
-          generateBasicSummary(processedTranscription.text);
+          // Set initial summary values with a title
+          setSummary({
+            title: "Medical Consultation Summary",
+            keyPoints: [],
+            medications: [],
+            followUp: "",
+          });
+
+          // Call Gemini AI to analyze the transcription
+          await analyzeTranscriptionWithAI(processedTranscription.text);
         }
 
         setStage("result");
@@ -365,6 +375,32 @@ const TranscribeAIScreen = ({ navigation, route }) => {
       medications: medications.length > 0 ? [...new Set(medications)] : [],
       followUp: followUpInfo ? followUpInfo[0].trim() : "",
     });
+  };
+
+  // Helper function to analyze the transcription using Gemini AI
+  const analyzeTranscriptionWithAI = async (text) => {
+    try {
+      // Call the Gemini AI API via our backend
+      const analysisResult = await analyzeTranscriptionWithGeminiAI(text);
+
+      // Update the summary with AI-generated key points
+      if (analysisResult && analysisResult.key_points) {
+        // Split key points by line breaks and bullet points to create an array
+        const keyPoints = analysisResult.key_points
+          .split(/\n/)
+          .map((point) => point.replace(/^[•\-\*]\s*/, "").trim())
+          .filter((point) => point.length > 0);
+
+        setSummary((prevSummary) => ({
+          ...prevSummary,
+          keyPoints: keyPoints,
+        }));
+      }
+    } catch (error) {
+      console.error("Error analyzing transcription with AI:", error);
+      // If AI analysis fails, fall back to basic summary generation
+      generateBasicSummary(text);
+    }
   };
 
   const handlePlayRecording = async () => {
