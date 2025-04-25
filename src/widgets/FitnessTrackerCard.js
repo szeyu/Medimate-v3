@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#333',
-    transform: [{ rotate: '315deg' }],
+    transform: [{ rotate: '-45deg' }],
   },
 });
 
