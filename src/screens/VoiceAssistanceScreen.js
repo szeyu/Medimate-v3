@@ -15,6 +15,7 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
+import { ASSEMBLYAI_API_KEY } from '@env';
 
 const VoiceAssistanceScreen = ({ navigation }) => {
   const [messages, setMessages] = useState([]);
@@ -29,8 +30,11 @@ const VoiceAssistanceScreen = ({ navigation }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentlyPlayingId, setCurrentlyPlayingId] = useState(null);
   const [currentDuration, setCurrentDuration] = useState('0:00');
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [transcriptionError, setTranscriptionError] = useState(null);
   const scrollViewRef = useRef(null);
   const durationInterval = useRef(null);
+  
   
   // Use FileSystem.documentDirectory for storing voice recordings
   const voiceDirectory = `${FileSystem.documentDirectory}voice/`;
