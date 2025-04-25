@@ -8,6 +8,8 @@ from parselmouth.praat import call
 import tensorflow as tf
 import os
 import logging
+from pydub import AudioSegment
+import tempfile
 
 logger = logging.getLogger(__name__)
 
@@ -42,11 +44,45 @@ class VoiceAnalyzer:
         
         self.model = model
 
+    def convert_to_wav(self, input_path):
+        """Convert audio file to WAV format if needed"""
+        try:
+            # Check if the file is already in WAV format
+            if input_path.lower().endswith('.wav'):
+                return input_path
+
+            logger.info(f"Converting audio file: {input_path}")
+            
+            # Load the audio file
+            if input_path.lower().endswith('.m4a'):
+                audio = AudioSegment.from_file(input_path, format="m4a")
+            else:
+                raise ValueError(f"Unsupported audio format: {input_path}")
+
+            # Create a temporary WAV file
+            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_wav:
+                temp_wav_path = temp_wav.name
+                
+            # Export as WAV
+            audio.export(temp_wav_path, format="wav")
+            logger.info(f"Converted to WAV: {temp_wav_path}")
+            
+            return temp_wav_path
+            
+        except Exception as e:
+            logger.error(f"Error converting audio file: {str(e)}")
+            raise Exception(f"Error converting audio file: {str(e)}")
+
     def extract_voice_features(self, voice_file_path, f0min=75, f0max=500):
         """Extract acoustic features from voice file"""
+        temp_wav_path = None
         try:
+            # Convert to WAV if needed
+            temp_wav_path = self.convert_to_wav(voice_file_path)
+            logger.info(f"Processing audio file: {temp_wav_path}")
+            
             # Load the audio file
-            sound = parselmouth.Sound(voice_file_path)
+            sound = parselmouth.Sound(temp_wav_path)
             
             # Get pitch object
             pitch = sound.to_pitch()
@@ -100,6 +136,15 @@ class VoiceAnalyzer:
         except Exception as e:
             logger.error(f"Error in feature extraction: {str(e)}")
             raise Exception(f"Error extracting voice features: {str(e)}")
+        
+        finally:
+            # Clean up temporary WAV file if it was created
+            if temp_wav_path and temp_wav_path != voice_file_path:
+                try:
+                    os.remove(temp_wav_path)
+                    logger.info(f"Cleaned up temporary WAV file: {temp_wav_path}")
+                except Exception as e:
+                    logger.warning(f"Failed to clean up temporary WAV file: {str(e)}")
 
     def train_model(self, X_train, y_train, epochs=50):
         """Train the model with voice features and glucose levels"""
