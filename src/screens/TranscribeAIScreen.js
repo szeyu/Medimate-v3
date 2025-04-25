@@ -380,21 +380,27 @@ const TranscribeAIScreen = ({ navigation, route }) => {
   // Helper function to analyze the transcription using Gemini AI
   const analyzeTranscriptionWithAI = async (text) => {
     try {
-      // Call the Gemini AI API via our backend
-      const analysisResult = await analyzeTranscriptionWithGeminiAI(text);
+      console.log("Sending transcription to Gemini AI for analysis...");
+
+      // Call the Gemini AI API via our backend, explicitly avoiding mock data
+      const analysisResult = await analyzeTranscriptionWithGeminiAI(
+        text,
+        false
+      ); // false = don't use mock data
+
+      console.log("Received Gemini AI analysis:", analysisResult);
 
       // Update the summary with AI-generated key points
       if (analysisResult && analysisResult.key_points) {
-        // Split key points by line breaks and bullet points to create an array
-        const keyPoints = analysisResult.key_points
-          .split(/\n/)
-          .map((point) => point.replace(/^[•\-\*]\s*/, "").trim())
-          .filter((point) => point.length > 0);
-
+        // Just use the exact output from Gemini AI without modification
         setSummary((prevSummary) => ({
           ...prevSummary,
-          keyPoints: keyPoints,
+          keyPoints: [analysisResult.key_points], // Wrap in array to preserve formatting
         }));
+      } else {
+        console.warn("No key_points found in Gemini AI response");
+        // If response doesn't contain expected data, fall back to basic generation
+        generateBasicSummary(text);
       }
     } catch (error) {
       console.error("Error analyzing transcription with AI:", error);

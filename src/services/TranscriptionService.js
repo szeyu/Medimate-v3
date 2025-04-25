@@ -1,12 +1,29 @@
 import axios from "axios";
 import * as FileSystem from "expo-file-system";
 import { ASSEMBLYAI_API_KEY } from "@env";
+import { Platform } from "react-native";
 
 // AssemblyAI API key - Using environment variable for security
 const API_KEY = ASSEMBLYAI_API_KEY;
 
-// Backend API URL - Should match your backend server
-const BACKEND_API_URL = "http://0.0.0.0:8000"; // Update this to your backend URL or IP address
+// Determine the correct backend URL based on platform and environment
+// NOTE: Replace YOUR_LOCAL_IP with your actual IP address for physical device testing
+const getBackendUrl = () => {
+  if (Platform.OS === "android") {
+    // 10.0.2.2 is the special IP for Android emulator to reach host localhost
+    return "http://10.0.2.2:8000";
+  } else if (Platform.OS === "ios") {
+    // For iOS simulator, localhost works
+    return "http://localhost:8000";
+  } else {
+    // For physical devices, you need to use your computer's actual local IP
+    // You can also set a specific DEV_MACHINE_IP in your .env file
+    return "http://172.20.10.9:8000"; // Replace with your actual IP!
+  }
+};
+
+const BACKEND_API_URL = getBackendUrl();
+console.log(`Using backend URL: ${BACKEND_API_URL}`);
 
 /**
  * Uploads an audio file to AssemblyAI for transcription
@@ -125,12 +142,15 @@ const createAndWaitForTranscription = async (audioUrl) => {
       console.log("DEV MODE: Simulating successful transcription");
       return {
         status: "completed",
-        text: "Doctor: Good morning. How are you feeling today?\n\nPatient: I've been having some pain in my joints especially in the morning. It's been getting worse over the past few weeks.\n\nDoctor: I see. Let's talk about your symptoms in more detail. Are you experiencing any swelling or redness around the painful joints?\n\nPatient: Yes especially in my fingers and wrists. They feel stiff for about an hour after I wake up.\n\nDoctor: That could indicate inflammatory arthritis. I'm going to recommend some blood tests to check for markers of inflammation and autoimmune conditions.",
+        text: "I've been having some pain in my joints especially in the morning. It's been getting worse over the past few weeks.\n\nGood morning. How are you feeling today?\n\nI see. Let's talk about your symptoms in more detail. Are you experiencing any swelling or redness around the painful joints?\n\nYes especially in my fingers and wrists. They feel stiff for about an hour after I wake up.\n\nThat could indicate inflammatory arthritis. I'm going to recommend some blood tests to check for markers of inflammation and autoimmune conditions.",
         utterances: [
-          { speaker: "A", text: "Good morning. How are you feeling today?" },
           {
             speaker: "B",
             text: "I've been having some pain in my joints especially in the morning. It's been getting worse over the past few weeks.",
+          },
+          {
+            speaker: "A",
+            text: "Good morning. How are you feeling today?",
           },
           {
             speaker: "A",
@@ -216,20 +236,18 @@ export const processTranscriptionData = (transcription) => {
     };
   }
 
-  // Format the transcription with speaker labels if available
+  // Just use the raw transcription text without speaker labels
   let formattedText = transcription.text;
   let utterances = [];
 
   if (transcription.utterances && transcription.utterances.length > 0) {
+    // Store utterances without speaker labels
     utterances = transcription.utterances.map((utterance) => ({
-      speaker: utterance.speaker === "A" ? "Doctor" : "Patient",
       text: utterance.text,
     }));
 
-    // Create a formatted text with speaker labels
-    formattedText = utterances
-      .map((u) => `${u.speaker}: ${u.text}`)
-      .join("\n\n");
+    // Just join the text without speaker labels
+    formattedText = utterances.map((u) => u.text).join("\n\n");
   }
 
   return {
@@ -241,26 +259,69 @@ export const processTranscriptionData = (transcription) => {
 /**
  * Analyzes a transcription using Gemini AI via the backend API
  * @param {string} transcriptionText - The text to analyze
+ * @param {boolean} useMockData - Optional flag to force using mock data (for testing)
  * @returns {Promise<object>} - The analysis results with key points
  */
-export const analyzeTranscriptionWithGeminiAI = async (transcriptionText) => {
+export const analyzeTranscriptionWithGeminiAI = async (
+  transcriptionText,
+  useMockData = false
+) => {
+  // If mock data is explicitly requested, return it immediately
+  if (useMockData === true) {
+    console.log("Using mock Gemini AI analysis as requested");
+    return {
+      key_points:
+        "• Patient reports joint pain, especially in the morning\n• Symptoms include swelling and stiffness in fingers and wrists\n• Doctor suspects inflammatory arthritis\n• Blood tests recommended to check for inflammation markers",
+    };
+  }
+
   try {
-    console.log("Analyzing transcription with Gemini AI");
+    console.log("Analyzing transcription with Gemini AI at:", BACKEND_API_URL);
 
     const response = await axios.post(
       `${BACKEND_API_URL}/analyze-transcription`,
       {
         transcription: transcriptionText,
+      },
+      {
+        // Add timeout to prevent hanging requests
+        timeout: 30000,
+        // Add more detailed headers for debugging
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
       }
     );
 
+    console.log("Received Gemini AI analysis response");
     return response.data;
   } catch (error) {
     console.error("Error analyzing transcription with Gemini AI:", error);
 
-    // For development: provide a fallback for testing
-    if (__DEV__) {
-      console.log("DEV MODE: Returning mock Gemini AI analysis");
+    // Log more detailed error information for debugging
+    if (error.response) {
+      // The server responded with a status code outside the 2xx range
+      console.error("Error response status:", error.response.status);
+      console.error("Error response data:", error.response.data);
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error(
+        "No response received from server. Request:",
+        error.request
+      );
+      console.error(
+        "Check if the backend server is running at:",
+        BACKEND_API_URL
+      );
+    } else {
+      // Something happened in setting up the request
+      console.error("Error setting up request:", error.message);
+    }
+
+    // Only use fallback data if explicitly requested or if fallbacks aren't disabled
+    if (useMockData !== false && __DEV__) {
+      console.log("DEV MODE: Returning mock Gemini AI analysis as fallback");
       return {
         key_points:
           "• Patient reports joint pain, especially in the morning\n• Symptoms include swelling and stiffness in fingers and wrists\n• Doctor suspects inflammatory arthritis\n• Blood tests recommended to check for inflammation markers",
