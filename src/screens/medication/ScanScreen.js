@@ -16,7 +16,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImageManipulator from 'expo-image-manipulator';
 
-// Define constants safely
+// Add API_URL constant at the top after imports
+const API_URL = 'http://192.168.100.16:8000'; // Local network IP address
 
 const { width, height } = Dimensions.get('window');
 
@@ -55,13 +56,61 @@ const ScanScreen = ({ navigation }) => {
         const resizedPhoto = await ImageManipulator.manipulateAsync(
           photo.uri,
           [{ resize: { width: 1024 } }],
-          { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+          { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG, base64: true }
         );
-        
-        // Simulate OCR processing (replace with actual OCR in production)
-        setTimeout(() => {
-          setScanned(true);
-        }, 2000);
+
+        console.log('Sending request to:', `${API_URL}/process-medication-image`);
+
+        // Send to backend for OCR processing
+        try {
+          const response = await fetch(`${API_URL}/process-medication-image`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              image: resizedPhoto.base64 || photo.base64 // Use original if resize failed to return base64
+            }),
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Server response:', errorText);
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const result = await response.json();
+          console.log('OCR Result:', result);
+          
+          // Handle the OCR result
+          if (result.error) {
+            Alert.alert('Error', result.error);
+            setScanning(false);
+          } else {
+            setScanned(true);
+            // Navigate to medication details with the OCR results
+            navigation.navigate('AddMedication', { 
+              medicationData: {
+                name: result.medication_name || 'Unknown',
+                description: result.description || '',
+                dosage: result.dosage || '',
+                frequency: result.frequency || '',
+                time: result.time_of_day || '',
+                startDate: new Date(),
+                duration: result.duration || '',
+                instructions: result.special_instructions || '',
+              }
+            });
+          }
+        } catch (error) {
+          console.error('Backend processing error:', error);
+          Alert.alert(
+            'Processing Error',
+            'Failed to process the medication image. Please try again.',
+            [{ text: 'OK' }]
+          );
+          setScanning(false);
+        }
         
       } catch (error) {
         console.error('Camera capture error:', error);
