@@ -1,446 +1,301 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  Alert,
-  ActivityIndicator,
-} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Platform } from 'react-native';
+import { Audio } from 'expo-av';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import GlucoseLevelCard from '../widgets/GlucoseLevelCard';
+import * as FileSystem from 'expo-file-system';
 
-const TestGlucoseLevelScreen = ({ navigation }) => {
-  const [recording, setRecording] = useState(false);
-  const [processing, setProcessing] = useState(false);
-  const [result, setResult] = useState(null);
-  
-  const startRecording = () => {
-    setRecording(true);
-    
-    // Simulate recording for 3 seconds
-    setTimeout(() => {
-      setRecording(false);
-      setProcessing(true);
-      
-      // Simulate processing for 2 seconds
-      setTimeout(() => {
-        setProcessing(false);
-        setResult({
-          level: 100,
-          status: 'Normal',
-          recommendations: [
-            'Consider brown rice to replace white rice',
-            'Consider reducing the intake of sweet'
-          ]
-        });
-      }, 2000);
-    }, 3000);
-  };
-  
-  const handleSave = () => {
-    Alert.alert(
-      'Success',
-      'Your glucose test result has been saved.',
-      [{ text: 'OK', onPress: () => navigation.goBack() }]
-    );
-  };
-  
-  const handleRetry = () => {
-    setResult(null);
-  };
-  
-  // Custom App Bar component
-  const CustomAppBar = ({ navigation }) => (
-    <View style={styles.appBar}>
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => navigation.goBack()}
-      >
-        <Icon name="arrow-back" size={24} color="#000000" />
-      </TouchableOpacity>
-      <Text style={styles.appBarTitle}>Test Glucose Level</Text>
-      <View style={styles.appBarRight}>
-        {/* Empty view for spacing */}
-      </View>
-    </View>
-  );
-  
-  const renderInitialState = () => (
-    <View style={styles.centeredContainer}>
-      <View style={styles.micContainer}>
-        <TouchableOpacity 
-          style={styles.micButton}
-          onPress={startRecording}
-        >
-          <Icon name="mic" size={40} color="#FFFFFF" />
-        </TouchableOpacity>
-        <Text style={styles.micInstructions}>
-          Tap the microphone and say{'\n'}
-          "I want to test my glucose level"
-        </Text>
-      </View>
-    </View>
-  );
-  
-  const renderRecordingState = () => (
-    <View style={styles.centeredContainer}>
-      <View style={styles.recordingContainer}>
-        <View style={styles.recordingIndicator}>
-          <Icon name="mic" size={40} color="#F44336" />
-        </View>
-        <Text style={styles.recordingText}>Recording...</Text>
-        <Text style={styles.listeningText}>
-          Listening for "I want to test my glucose level"
-        </Text>
-      </View>
-    </View>
-  );
-  
-  const renderProcessingState = () => (
-    <View style={styles.centeredContainer}>
-      <ActivityIndicator size="large" color="#1167FE" />
-      <Text style={styles.processingText}>Processing your voice sample...</Text>
-    </View>
-  );
-  
-  const renderResultState = () => (
-    <View style={styles.resultContainer}>
-      <View style={styles.resultHeader}>
-        <Text style={styles.resultTitle}>Glucose Test Result</Text>
-        <Text style={styles.resultTimestamp}>Today, 2:30 PM</Text>
-      </View>
-      
-      <View style={styles.resultValueContainer}>
-        <Text style={styles.resultValue}>{result.level}</Text>
-        <Text style={styles.resultUnit}>mg/dL</Text>
-      </View>
-      
-      <View style={styles.statusContainer}>
-        <Text style={styles.statusText}>Status: {result.status}</Text>
-      </View>
-      
-      <View style={styles.riskIndicatorContainer}>
-        <View style={styles.riskGradient}>
-          <View style={styles.riskGradientInner}>
-            <View style={styles.riskGradientLow} />
-            <View style={styles.riskGradientMedium} />
-            <View style={styles.riskGradientHigh} />
-          </View>
-          <View 
-            style={[
-              styles.riskPointer, 
-              { left: `${calculatePointerPosition(result.level)}%` }
-            ]} 
-          />
-        </View>
-        <View style={styles.riskLabelsContainer}>
-          <Text style={styles.riskLabel}>Low (70-90)</Text>
-          <Text style={styles.riskLabel}>Normal (90-120)</Text>
-          <Text style={styles.riskLabel}>High (120+)</Text>
-        </View>
-      </View>
-      
-      <View style={styles.recommendationsContainer}>
-        <Text style={styles.recommendationsTitle}>Action Recommended</Text>
-        {result.recommendations.map((recommendation, index) => (
-          <View key={index} style={styles.recommendationItem}>
-            <Icon name="check-circle" size={20} color="#4CAF50" />
-            <Text style={styles.recommendationText}>{recommendation}</Text>
-          </View>
-        ))}
-      </View>
-      
-      <View style={styles.actionsContainer}>
-        <TouchableOpacity 
-          style={[styles.actionButton, styles.saveButton]}
-          onPress={handleSave}
-        >
-          <Text style={styles.saveButtonText}>Save</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={[styles.actionButton, styles.retryButton]}
-          onPress={handleRetry}
-        >
-          <Text style={styles.retryButtonText}>Retry</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+// Replace with your laptop's local IP address (e.g., 192.168.1.X)
+// You can find this by running 'ifconfig' on Linux/Mac or 'ipconfig' on Windows
+const API_URL = 'http://192.168.100.16:8000';
 
-  const calculatePointerPosition = (level) => {
-    // Define the glucose ranges
-    const lowMin = 70;
-    const lowMax = 90;
-    const normalMin = 90;
-    const normalMax = 120;
-    const highMin = 120;
-    const highMax = 180; // Setting an upper bound for visualization
-    
-    // Define position ranges (in percentage)
-    const posMin = 5;  // Minimum position (left edge)
-    const posMax = 95; // Maximum position (right edge)
-    
-    let position;
-    
-    if (level < lowMin) {
-      // Below minimum range
-      position = posMin;
-    } else if (level <= lowMax) {
-      // Low range (70-90): 5% to 33%
-      position = posMin + ((level - lowMin) / (lowMax - lowMin)) * (33 - posMin);
-    } else if (level <= normalMax) {
-      // Normal range (90-120): 33% to 67%
-      position = 33 + ((level - normalMin) / (normalMax - normalMin)) * (67 - 33);
-    } else if (level <= highMax) {
-      // High range (120-180): 67% to 95%
-      position = 67 + ((level - highMin) / (highMax - highMin)) * (posMax - 67);
-    } else {
-      // Above maximum range
-      position = posMax;
+const TestGlucoseLevelScreen = () => {
+  const [recording, setRecording] = useState();
+  const [isListening, setIsListening] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  const [glucoseData, setGlucoseData] = useState({
+    glucoseLevel: 0,
+    status: 'Normal',
+    rangeInfo: '',
+  });
+
+  // Add network check
+  const checkServerConnection = async () => {
+    try {
+      const response = await fetch(`${API_URL}/`);
+      return response.ok;
+    } catch (error) {
+      console.error('Server connection error:', error);
+      return false;
     }
-    
-    return Math.round(position);
+  };
+
+  useEffect(() => {
+    const setup = async () => {
+      // Check server connection
+      const isConnected = await checkServerConnection();
+      if (!isConnected) {
+        Alert.alert(
+          'Connection Error',
+          'Cannot connect to the server. Make sure your phone and laptop are on the same network.',
+          [{ text: 'OK' }]
+        );
+      }
+
+      // Get audio permissions
+      try {
+        const permission = await Audio.requestPermissionsAsync();
+        if (permission.status !== 'granted') {
+          Alert.alert(
+            'Permission Required',
+            'This app needs microphone access to record audio.',
+            [{ text: 'OK' }]
+          );
+        }
+      } catch (err) {
+        console.error('Failed to get permission:', err);
+      }
+
+      // Set audio mode
+      try {
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: true,
+          playsInSilentModeIOS: true,
+          staysActiveInBackground: false,
+          interruptionModeIOS: 1,
+          interruptionModeAndroid: 1,
+        });
+      } catch (err) {
+        console.error('Failed to set audio mode:', err);
+      }
+    };
+
+    setup();
+
+    return () => {
+      if (recording) {
+        stopRecording();
+      }
+    };
+  }, []);
+
+  const startRecording = async () => {
+    try {
+      const fileName = `recording_${new Date().getTime()}.m4a`;
+      const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
+
+      console.log('Starting recording...');
+      const { recording: newRecording } = await Audio.Recording.createAsync({
+        android: {
+          extension: '.m4a',
+          outputFormat: Audio.RECORDING_OPTION_ANDROID_OUTPUT_FORMAT_MPEG_4,
+          audioEncoder: Audio.RECORDING_OPTION_ANDROID_AUDIO_ENCODER_AAC,
+          sampleRate: 44100,
+          numberOfChannels: 1,
+          bitRate: 128000,
+        },
+        ios: {
+          extension: '.m4a',
+          audioQuality: Audio.RECORDING_OPTION_IOS_AUDIO_QUALITY_MAX,
+          sampleRate: 44100,
+          numberOfChannels: 1,
+          bitRate: 128000,
+          outputFormat: Audio.RECORDING_OPTION_IOS_OUTPUT_FORMAT_MPEG4AAC,
+        },
+      }, undefined, undefined, fileUri);
+
+      setRecording(newRecording);
+      setIsListening(true);
+      setShowResults(false);
+    } catch (err) {
+      console.error('Failed to start recording:', err);
+      Alert.alert('Error', 'Failed to start recording. Please try again.');
+    }
+  };
+
+  const stopRecording = async () => {
+    if (!recording) return;
+
+    try {
+      console.log('Stopping recording...');
+      await recording.stopAndUnloadAsync();
+      const uri = recording.getURI();
+      setRecording(undefined);
+      setIsListening(false);
+
+      if (!uri) {
+        console.error('No recording URI available');
+        Alert.alert('Error', 'No recording data available. Please try again.');
+        return;
+      }
+
+      console.log('Recording URI:', uri);
+
+      // Create form data
+      const formData = new FormData();
+      
+      // For Android, we need to handle the file:// protocol
+      const fileUri = Platform.OS === 'android' ? uri : uri.replace('file://', '');
+      
+      formData.append('file', {
+        uri: fileUri,
+        type: 'audio/m4a',
+        name: 'glucose_test.m4a',
+      });
+
+      console.log('Sending to server...');
+      try {
+        // Check server connection before sending
+        const isConnected = await checkServerConnection();
+        if (!isConnected) {
+          Alert.alert(
+            'Connection Error',
+            'Cannot connect to the server. Make sure your phone and laptop are on the same network.',
+            [{ text: 'OK' }]
+          );
+          return;
+        }
+
+        const response = await fetch(`${API_URL}/upload-voice`, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+
+        const responseText = await response.text();
+        console.log('Server response text:', responseText);
+
+        if (response.ok) {
+          const data = JSON.parse(responseText);
+          console.log('Server response data:', data);
+          setGlucoseData({
+            glucoseLevel: data.glucose_level,
+            status: data.status,
+            rangeInfo: data.range_info || 'Your glucose level has been measured',
+          });
+          setShowResults(true);
+        } else {
+          console.error('Server error:', responseText);
+          Alert.alert(
+            'Server Error',
+            'Failed to process voice recording. Please check if the server is running correctly.',
+            [{ text: 'OK' }]
+          );
+        }
+      } catch (error) {
+        console.error('Network error:', error);
+        Alert.alert(
+          'Network Error',
+          'Failed to connect to the server. Make sure your phone and laptop are on the same network.',
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (err) {
+      console.error('Error stopping recording:', err);
+      Alert.alert('Error', 'Failed to stop recording. Please try again.');
+    }
   };
 
   return (
-    <View style={styles.container}>
-      <CustomAppBar navigation={navigation} />
-      
+    <ScrollView style={styles.container}>
       <View style={styles.content}>
-        {!recording && !processing && !result && renderInitialState()}
-        {recording && renderRecordingState()}
-        {processing && renderProcessingState()}
-        {result && renderResultState()}
+        {showResults ? (
+          <>
+            <GlucoseLevelCard
+              glucoseLevel={glucoseData.glucoseLevel}
+              status={glucoseData.status}
+              rangeInfo={glucoseData.rangeInfo}
+            />
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={() => setShowResults(false)}
+            >
+              <Text style={styles.retryButtonText}>Test Again</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <View style={styles.recordingContainer}>
+            <Text style={styles.title}>Voice Glucose Test</Text>
+            <Text style={styles.subtitle}>
+              {isListening
+                ? 'Listening...'
+                : 'Press and hold the microphone to start recording'}
+            </Text>
+            
+            <TouchableOpacity
+              style={[
+                styles.recordButton,
+                isListening && styles.recordButtonActive,
+              ]}
+              onPressIn={startRecording}
+              onPressOut={stopRecording}
+            >
+              <Icon
+                name="mic"
+                size={32}
+                color={isListening ? '#FF4444' : '#FFFFFF'}
+              />
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F7FA',
-  },
-  appBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    top: 50,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    borderBottomWidth: 1,
-    borderBottomColor: '#EEEEEE',
-  },
-  backButton: {
-    padding: 8,
-  },
-  appBarTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333333',
-  },
-  appBarRight: {
-    width: 40,
+    backgroundColor: '#F5F5F5',
   },
   content: {
-    flex: 1,
-    padding: 16,
-  },
-  centeredContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  micContainer: {
-    alignItems: 'center',
-  },
-  micButton: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#1167FE',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  micInstructions: {
-    fontSize: 16,
-    color: '#666666',
-    textAlign: 'center',
-    lineHeight: 24,
+    padding: 20,
   },
   recordingContainer: {
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 40,
   },
-  recordingIndicator: {
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#333',
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 30,
+  },
+  recordButton: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: 'rgba(244, 67, 54, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  recordingText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#F44336',
-    marginBottom: 8,
-  },
-  listeningText: {
-    fontSize: 14,
-    color: '#666666',
-    textAlign: 'center',
-  },
-  processingText: {
-    fontSize: 16,
-    color: '#666666',
-    marginTop: 16,
-  },
-  resultContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  resultHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  resultTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  resultTimestamp: {
-    fontSize: 14,
-    color: '#666666',
-  },
-  resultValueContainer: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    marginBottom: 16,
-  },
-  resultValue: {
-    fontSize: 48,
-    fontWeight: 'bold',
-    color: '#1167FE',
-  },
-  resultUnit: {
-    fontSize: 16,
-    color: '#666666',
-    marginLeft: 8,
-  },
-  statusContainer: {
-    marginBottom: 24,
-  },
-  statusText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  riskIndicatorContainer: {
-    marginBottom: 32,
-  },
-  riskGradient: {
-    height: 8,
-    borderRadius: 4,
-    position: 'relative',
-  },
-  riskGradientInner: {
-    flexDirection: 'row',
-    height: '100%',
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  riskGradientLow: {
-    flex: 1,
-    backgroundColor: '#4CAF50', // Green
-  },
-  riskGradientMedium: {
-    flex: 1,
-    backgroundColor: '#FFC107', // Yellow
-  },
-  riskGradientHigh: {
-    flex: 1,
-    backgroundColor: '#F44336', // Red
-  },
-  riskPointer: {
-    position: 'absolute',
-    top: -4,
-    width: 0,
-    height: 0,
-    borderLeftWidth: 8,
-    borderRightWidth: 8,
-    borderBottomWidth: 12,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderBottomColor: '#1167FE',
-  },
-  riskLabelsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 8,
-  },
-  riskLabel: {
-    fontSize: 12,
-    color: '#666666',
-  },
-  recommendationsContainer: {
-    marginBottom: 32,
-  },
-  recommendationsTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 16,
-  },
-  recommendationItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  recommendationText: {
-    fontSize: 16,
-    marginLeft: 8,
-  },
-  actionsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  actionButton: {
-    flex: 0.48,
-    paddingVertical: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  saveButton: {
     backgroundColor: '#1167FE',
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 4,
   },
-  saveButtonText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-    fontSize: 16,
+  recordButtonActive: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#FF4444',
   },
   retryButton: {
-    backgroundColor: '#F5F7FA',
-    borderWidth: 1,
-    borderColor: '#DDDDDD',
+    backgroundColor: '#1167FE',
+    padding: 15,
+    borderRadius: 8,
+    marginTop: 20,
+    alignItems: 'center',
   },
   retryButtonText: {
-    color: '#666666',
-    fontWeight: 'bold',
+    color: '#FFFFFF',
     fontSize: 16,
+    fontWeight: '500',
   },
 });
 

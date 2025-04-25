@@ -143,55 +143,90 @@ async def upload_voice(file: UploadFile = File(...)):
     Upload a voice file and predict glucose level
     """
     try:
-        # Create a temporary file path
-        temp_file_path = os.path.join(UPLOAD_DIR, f"{uuid.uuid4()}.wav")
+        # Log incoming file details
+        logger.info(f"Received file: {file.filename}")
+        logger.info(f"Content type: {file.content_type}")
+        
+        # Verify file type
+        if not file.filename.endswith(('.wav', '.m4a')):
+            logger.error(f"Invalid file extension: {file.filename}")
+            raise HTTPException(status_code=400, detail="File must be .wav or .m4a format")
+
+        # Create a temporary file path with the correct extension
+        extension = '.m4a' if file.filename.endswith('.m4a') else '.wav'
+        temp_file_path = os.path.join(UPLOAD_DIR, f"{uuid.uuid4()}{extension}")
         
         try:
             # Save the uploaded file
+            file_content = await file.read()
+            logger.info(f"Read file content length: {len(file_content)} bytes")
+            
             with open(temp_file_path, "wb") as buffer:
-                shutil.copyfileobj(file.file, buffer)
+                buffer.write(file_content)
             
-            # Extract features from the voice file
-            features = voice_analyzer.extract_voice_features(temp_file_path)
+            logger.info(f"Saved audio file to: {temp_file_path}")
+            logger.info(f"File size after save: {os.path.getsize(temp_file_path)} bytes")
             
-            # Predict glucose level
-            glucose_level, confidence = voice_analyzer.predict_glucose(features)
-            
-            # Determine status and range info
-            status = "Normal"
-            if glucose_level < 80:
-                status = "Low"
-                range_info = "Below normal range (<80 mg/dL)"
-            elif glucose_level > 120:
-                status = "High"
-                if glucose_level > 140:
-                    range_info = "Diabetic range (>140 mg/dL)"
-                else:
-                    range_info = "Pre-diabetic range (120-140 mg/dL)"
+            # Log file details
+            if os.path.exists(temp_file_path):
+                logger.info(f"File exists at: {temp_file_path}")
+                logger.info(f"File permissions: {oct(os.stat(temp_file_path).st_mode)[-3:]}")
             else:
-                range_info = "Normal range (80-120 mg/dL)"
+                logger.error(f"File does not exist at: {temp_file_path}")
             
-            response = VoiceAnalysisResponse(
-                glucose_level=float(glucose_level),
-                confidence_score=float(confidence),
-                status=status,
-                range_info=range_info
-            )
-            
-            logger.info(f"Analysis response: {response}")
-            return response
+            try:
+                # Extract features from the voice file
+                logger.info("Starting feature extraction...")
+                features = voice_analyzer.extract_voice_features(temp_file_path)
+                logger.info("Feature extraction completed")
+                
+                # Predict glucose level
+                logger.info("Starting glucose prediction...")
+                glucose_level, confidence = voice_analyzer.predict_glucose(features)
+                logger.info(f"Prediction completed: level={glucose_level}, confidence={confidence}")
+                
+                # Determine status and range info
+                status = "Normal"
+                if glucose_level < 80:
+                    status = "Low"
+                    range_info = "Below normal range (<80 mg/dL)"
+                elif glucose_level > 120:
+                    status = "High"
+                    if glucose_level > 140:
+                        range_info = "Diabetic range (>140 mg/dL)"
+                    else:
+                        range_info = "Pre-diabetic range (120-140 mg/dL)"
+                else:
+                    range_info = "Normal range (80-120 mg/dL)"
+                
+                response = VoiceAnalysisResponse(
+                    glucose_level=float(glucose_level),
+                    confidence_score=float(confidence),
+                    status=status,
+                    range_info=range_info
+                )
+                
+                logger.info(f"Analysis response: {response}")
+                return response
+            except Exception as feature_error:
+                logger.error(f"Error in feature extraction or prediction: {str(feature_error)}")
+                logger.error(f"Error type: {type(feature_error)}")
+                import traceback
+                logger.error(f"Traceback: {traceback.format_exc()}")
+                raise HTTPException(status_code=500, detail=f"Error processing audio: {str(feature_error)}")
             
         except Exception as e:
             logger.error(f"Error processing voice file: {str(e)}")
+            logger.error(f"Error type: {type(e)}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
             raise HTTPException(status_code=500, detail=f"Error processing voice file: {str(e)}")
-        
-        finally:
-            # Clean up the temporary file
-            if os.path.exists(temp_file_path):
-                os.remove(temp_file_path)
                 
     except Exception as e:
         logger.error(f"Error in request processing: {str(e)}")
+        logger.error(f"Error type: {type(e)}")
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
         raise HTTPException(status_code=400, detail=f"Invalid request: {str(e)}")
 
 @app.post("/train-voice-model")

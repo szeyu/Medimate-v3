@@ -3,8 +3,19 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
 
-const GlucoseLevelCard = () => {
+const GlucoseLevelCard = ({ glucoseLevel, status, rangeInfo }) => {
   const navigation = useNavigation();
+
+  const getStatusColor = () => {
+    switch (status?.toLowerCase()) {
+      case 'high':
+        return '#F44336';
+      case 'low':
+        return '#FFC107';
+      default:
+        return '#4CAF50';
+    }
+  };
 
   return (
     <View>
@@ -12,32 +23,24 @@ const GlucoseLevelCard = () => {
         <Text style={styles.sectionTitle}>Glucose Level</Text>
         <Icon name="more-horiz" size={24} color="#9E9E9E" />
       </View>
-      <TouchableOpacity 
-        style={[styles.card, styles.glucoseCard]} 
-        onPress={() => {
-          navigation.navigate('TestGlucoseLevel');
-        }}
-      >
+      <View style={[styles.card, styles.glucoseCard]}>
         <View style={styles.glucoseCardContent}>
-          <View style={styles.glucoseLevelContainer}>
-            <Text style={styles.glucoseLevelText}>100</Text>
-            <Text style={styles.glucoseLevelUnit}>mg/dL</Text>
+          <View style={[styles.glucoseLevelContainer, { backgroundColor: `${getStatusColor()}20` }]}>
+            <Text style={[styles.glucoseLevelText, { color: getStatusColor() }]}>{Math.round(glucoseLevel)}</Text>
+            <Text style={[styles.glucoseLevelUnit, { color: getStatusColor() }]}>mg/dL</Text>
           </View>
           <View style={styles.glucoseLevelInfo}>
             <Text style={styles.glucoseLevelTitle}>Current Glucose Level</Text>
             <Text style={styles.glucoseLevelDescription}>
-              Your glucose level is within normal range
+              {rangeInfo || 'Your glucose level has been measured'}
             </Text>
             <View style={styles.glucoseLevelStatus}>
-              <View style={styles.glucoseLevelStatusIndicator} />
-              <Text style={styles.glucoseLevelStatusText}>Normal</Text>
+              <View style={[styles.glucoseLevelStatusIndicator, { backgroundColor: getStatusColor() }]} />
+              <Text style={[styles.glucoseLevelStatusText, { color: getStatusColor() }]}>{status || 'Normal'}</Text>
             </View>
           </View>
         </View>
-        <View style={styles.glucoseCardArrow}>
-          <Icon name="chevron-right" size={24} color="#1167FE" />
-        </View>
-      </TouchableOpacity>
+      </View>
       <Text style={styles.tapToTestText}>
         Test your glucose level with voice
       </Text>
@@ -80,7 +83,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   glucoseLevelContainer: {
-    // backgroundColor: 'rgba(76, 175, 80, 0.1)',
     backgroundColor: '#DAFBFC',
     borderRadius: 12,
     padding: 12,
@@ -126,9 +128,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#00929D',
     fontWeight: '500',
-  },
-  glucoseCardArrow: {
-    padding: 8,
   },
   tapToTestText: {
     fontSize: 12,
