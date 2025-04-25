@@ -630,10 +630,31 @@ const TranscribeAIScreen = ({ navigation, route }) => {
       showsVerticalScrollIndicator={true}
       contentContainerStyle={{ paddingBottom: 100 }}
     >
+      {/* Improved header arrangement with title */}
       <View style={styles.resultHeader}>
         <Text style={styles.resultTitle}>
           {summary.title || "Transcription Result"}
         </Text>
+      </View>
+
+      {/* Controls in a row */}
+      <View style={styles.controlsContainer}>
+        {/* Audio playback control - shorter button */}
+        <TouchableOpacity
+          style={styles.playButton}
+          onPress={isPlaying ? handleStopPlayback : handlePlayRecording}
+        >
+          <Icon
+            name={isPlaying ? "stop" : "play-arrow"}
+            size={20}
+            color="#FFFFFF"
+          />
+          <Text style={styles.playButtonText}>
+            {isPlaying ? "Stop" : "Play"}
+          </Text>
+        </TouchableOpacity>
+
+        {/* Copy button */}
         <TouchableOpacity
           style={[styles.copyButton, isCopied ? styles.copiedButton : null]}
           onPress={handleCopyToClipboard}
@@ -654,23 +675,7 @@ const TranscribeAIScreen = ({ navigation, route }) => {
         </TouchableOpacity>
       </View>
 
-      {/* Audio playback control */}
-      <View style={styles.audioPlayerContainer}>
-        <TouchableOpacity
-          style={styles.playButton}
-          onPress={isPlaying ? handleStopPlayback : handlePlayRecording}
-        >
-          <Icon
-            name={isPlaying ? "stop" : "play-arrow"}
-            size={20}
-            color="#FFFFFF"
-          />
-          <Text style={styles.playButtonText}>
-            {isPlaying ? "Stop Audio" : "Play Recording"}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
+      {/* Key Points Section with proper box */}
       <View style={styles.summarySection}>
         <Text style={styles.sectionTitle}>Key Points</Text>
         {summary.keyPoints && summary.keyPoints.length > 0 ? (
@@ -690,38 +695,7 @@ const TranscribeAIScreen = ({ navigation, route }) => {
         )}
       </View>
 
-      <View style={styles.summarySection}>
-        <Text style={styles.sectionTitle}>Medications</Text>
-        <View style={styles.medicationsContainer}>
-          {summary.medications && summary.medications.length > 0 ? (
-            summary.medications.map((medication, index) => (
-              <View key={index} style={styles.medicationItem}>
-                <Icon
-                  name="medication"
-                  size={16}
-                  color="#1167FE"
-                  style={styles.medicationIcon}
-                />
-                <Text style={styles.medicationText}>{medication}</Text>
-              </View>
-            ))
-          ) : (
-            <Text style={styles.emptyText}>No medications identified.</Text>
-          )}
-        </View>
-
-        <Text style={styles.sectionTitle}>Follow-up</Text>
-        <View style={styles.followUpContainer}>
-          {summary.followUp ? (
-            <Text style={styles.followUpText}>{summary.followUp}</Text>
-          ) : (
-            <Text style={styles.emptyText}>
-              No follow-up information available.
-            </Text>
-          )}
-        </View>
-      </View>
-
+      {/* Full Transcription Section */}
       <View style={styles.transcriptionSection}>
         <View style={styles.transcriptionHeader}>
           <Text style={styles.transcriptionTitle}>Full Transcription</Text>
@@ -1045,6 +1019,12 @@ const styles = StyleSheet.create({
   audioPlayerContainer: {
     marginBottom: 16,
   },
+  controlsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
   playButton: {
     backgroundColor: "#1167FE",
     flexDirection: "row",
@@ -1053,21 +1033,12 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
-    alignSelf: "flex-start",
   },
   playButtonText: {
     color: "#FFFFFF",
     fontSize: 14,
     fontWeight: "600",
     marginLeft: 8,
-  },
-  summarySection: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "#EEEEEE",
   },
   sectionTitle: {
     fontSize: 16,
@@ -1112,6 +1083,14 @@ const styles = StyleSheet.create({
     color: "#666666",
   },
   transcriptionSection: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#EEEEEE",
+  },
+  summarySection: {
     backgroundColor: "#FFFFFF",
     borderRadius: 8,
     padding: 16,
