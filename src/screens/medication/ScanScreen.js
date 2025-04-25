@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,30 +7,109 @@ import {
   Image,
   SafeAreaView,
   ActivityIndicator,
-  Dimensions
+  Dimensions,
+  Alert,
+  Platform
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Ionicons } from '@expo/vector-icons';
+import { CameraView, useCameraPermissions } from 'expo-camera';
+import * as ImageManipulator from 'expo-image-manipulator';
+
+// Define constants safely
 
 const { width, height } = Dimensions.get('window');
 
 const ScanScreen = ({ navigation }) => {
+  const [permission, requestPermission] = useCameraPermissions();
   const [scanning, setScanning] = useState(false);
   const [scanned, setScanned] = useState(false);
-  const [flashMode, setFlashMode] = useState(false);
+  const [cameraAvailable, setCameraAvailable] = useState(true);
+  const cameraRef = useRef(null);
 
-  const toggleFlash = () => {
-    setFlashMode(!flashMode);
-  };
-
-  const handleCapture = () => {
-    setScanning(true);
+  useEffect(() => {
+    if (!permission) {
+      // Camera permissions are still loading
+      return;
+    }
     
-    // Simulate OCR processing
-    setTimeout(() => {
-      setScanned(true);
-    }, 2000);
+    if (!permission.granted) {
+      // Request permission if not granted
+      requestPermission();
+    }
+  }, [permission]);
+
+  const handleCapture = async () => {
+    if (cameraRef.current) {
+      try {
+        setScanning(true);
+        
+        // Take a picture with the new CameraView API
+        const photo = await cameraRef.current.takePictureAsync({
+          quality: 0.8,
+          base64: true,
+          exif: true,
+        });
+        
+        // Resize the image for better processing
+        const resizedPhoto = await ImageManipulator.manipulateAsync(
+          photo.uri,
+          [{ resize: { width: 1024 } }],
+          { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+        );
+        
+        // Simulate OCR processing (replace with actual OCR in production)
+        setTimeout(() => {
+          setScanned(true);
+        }, 2000);
+        
+      } catch (error) {
+        console.error('Camera capture error:', error);
+        Alert.alert('Error', 'Failed to capture image. Please try again.');
+        setScanning(false);
+      }
+    }
   };
+
+  if (!permission) {
+    // Camera permissions are still loading
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#FFFFFF" />
+        <Text style={styles.permissionText}>Requesting camera permission...</Text>
+      </View>
+    );
+  }
+
+  if (!permission.granted) {
+    // Camera permissions are not granted yet
+    return (
+      <View style={styles.container}>
+        <Text style={styles.permissionText}>We need your permission to show the camera</Text>
+        <TouchableOpacity
+          style={styles.permissionButton}
+          onPress={requestPermission}
+        >
+          <Text style={styles.permissionButtonText}>Grant Permission</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+  
+  if (!cameraAvailable) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#FFFFFF" />
+        <Text style={styles.permissionText}>Camera not available</Text>
+        <TouchableOpacity
+          style={styles.permissionButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Text style={styles.permissionButtonText}>Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -43,45 +122,36 @@ const ScanScreen = ({ navigation }) => {
         </TouchableOpacity>
         
         <Text style={styles.headerTitle}>Scan Medication</Text>
-        
-        <TouchableOpacity
-          style={styles.flashButton}
-          onPress={toggleFlash}
-        >
-          <Ionicons 
-            name={flashMode ? "flash" : "flash-off"} 
-            size={20} 
-            color="#FFFFFF" 
-          />
-        </TouchableOpacity>
       </View>
 
       <View style={styles.cameraContainer}>
-        {/* Mock camera view with hardcoded image */}
-        <Image 
-          source={require('../../../assets/medicationSample.png')} 
-          style={styles.mockCamera}
-          resizeMode="contain"
-        />
-        
-        {/* Scan frame overlay */}
-        <View style={styles.scanFrame}>
-          <View style={styles.cornerTL} />
-          <View style={styles.cornerTR} />
-          <View style={styles.cornerBL} />
-          <View style={styles.cornerBR} />
+        <View style={styles.cameraWrapper}>
+          <CameraView
+            ref={cameraRef}
+            style={styles.camera}
+            ratio="16:9"
+          >
+            {/* Scan frame overlay */}
+            <View style={styles.scanFrame}>
+              <View style={styles.cornerTL} />
+              <View style={styles.cornerTR} />
+              <View style={styles.cornerBL} />
+              <View style={styles.cornerBR} />
+            </View>
+            
+            {/* Instruction text */}
+            <Text style={styles.instructionText}>
+              Position the medication label within the frame
+            </Text>
+          </CameraView>
         </View>
-        
-        {/* Instruction text */}
-        <Text style={styles.instructionText}>
-          Position the medication label within the frame
-        </Text>
       </View>
 
       <View style={styles.footer}>
         <TouchableOpacity
           style={styles.captureButton}
           onPress={handleCapture}
+          disabled={scanning}
         >
           <View style={styles.captureButtonInner} />
         </TouchableOpacity>
@@ -164,12 +234,17 @@ const styles = StyleSheet.create({
   cameraContainer: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     position: 'relative',
+    paddingRight: 10, // Add padding to shift camera to the right
   },
-  mockCamera: {
-    width: width,
-    height: height * 0.5,
+  cameraWrapper: {
+    width: width * 0.95, // Slightly reduce width to fit with right alignment
+    height: height * 0.7,
+    overflow: 'hidden',
+  },
+  camera: {
+    flex: 1,
   },
   scanFrame: {
     position: 'absolute',
@@ -178,6 +253,8 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'rgba(138, 63, 252, 0.5)',
     backgroundColor: 'transparent',
+    top: height * 0.2,
+    right: width * 0.075, // Position the scan frame to align with the right-shifted camera
   },
   cornerTL: {
     position: 'absolute',
@@ -227,6 +304,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     padding: 10,
     borderRadius: 8,
+    position: 'absolute',
+    bottom: 40,
+    right: width * 0.08, // Align instruction text with the shifted camera view
+    width: width * 0.8, // Set width to match the scan frame
   },
   footer: {
     padding: 20,
@@ -252,14 +333,13 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
   },
   processingText: {
     color: '#FFFFFF',
     fontSize: 18,
-    fontWeight: 'bold',
     marginTop: 20,
   },
   resultContainer: {
@@ -268,9 +348,9 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
   },
   resultText: {
     color: '#FFFFFF',
@@ -291,6 +371,24 @@ const styles = StyleSheet.create({
     borderRadius: 25,
   },
   continueButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  permissionText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    textAlign: 'center',
+    marginTop: 20,
+  },
+  permissionButton: {
+    backgroundColor: '#8A3FFC',
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+    marginTop: 20,
+  },
+  permissionButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
