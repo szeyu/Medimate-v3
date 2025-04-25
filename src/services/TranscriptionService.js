@@ -1,9 +1,16 @@
 import axios from "axios";
 import * as FileSystem from "expo-file-system";
+import { ASSEMBLYAI_API_KEY } from "@env";
 
-// AssemblyAI API key - Use an environment variable for security
-// For development, you can use a hardcoded key but NEVER commit it to version control
-const API_KEY = "71ccbaa1e3554a61b78d42408e90b3eb"; // Your AssemblyAI API key
+// Use environment variable for API key - never hardcode API keys in production code
+const API_KEY = ASSEMBLYAI_API_KEY || "";
+
+// Check if API key is available and log a warning if not
+if (!API_KEY) {
+  console.warn(
+    "AssemblyAI API key is missing. Add ASSEMBLYAI_API_KEY to your .env file."
+  );
+}
 
 /**
  * Uploads an audio file to AssemblyAI for transcription
