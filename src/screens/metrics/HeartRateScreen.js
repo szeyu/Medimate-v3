@@ -77,65 +77,67 @@ const HeartRateScreen = ({ navigation }) => {
             ))}
           </View>
 
-          {/* Chart */}
-          <View style={styles.chartPlaceholder}>
-            {/* <View style={styles.chartContainer}> */}
-              <LineChart
-                areaChart
-                data={lineData}
-                width={width - 40}
-                height={200}
-                spacing={4}
-                initialSpacing={10}
-                color="#2D6BFF"
-                thickness={2}
-                maxValue={120}
-                noOfSections={4}
-                yAxisTextStyle={{ color: '#8A8D9F' }}
-                yAxisLabelTexts={['0', '60', '80', '100', '120']}
-                yAxisTextNumberOfLines={1}
-                yAxisLabelWidth={10}
-                hideDataPoints={false}
-                startFillColor="rgba(45, 107, 255, 0.2)"
-                endFillColor="rgba(45, 107, 255, 0.0)"
-                startOpacity={0.9}
-                endOpacity={0.2}
-                backgroundColor="transparent"
-                rulesColor="#E5E5E5"
-                rulesType="solid"
-                xAxisColor="transparent"
-                pointerConfig={{
-                  pointerStripHeight: 160,
-                  pointerStripColor: 'lightgray',
-                  pointerStripWidth: 2,
-                  pointerColor: '#2D6BFF',
-                  radius: 6,
-                  pointerLabelWidth: 100,
-                  pointerLabelHeight: 90,
-                  activatePointersOnLongPress: true,
-                  autoAdjustPointerLabelPosition: true,
-                  pointerLabelComponent: (items) => {
-                    return (
-                      <View style={{
-                        height: 90,
-                        width: 20,
-                        backgroundColor: '#282C3E',
-                        borderRadius: 8,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                      }}>
-                        <Text style={{color: 'black', fontSize: 14}}>{items[0].value} BPM</Text>
-                        <Text style={{color: 'black', fontSize: 12}}>{items[0].label}</Text>
-                      </View>
-                    );
-                  },
-                }}
-                curved
-              />
-            </View>
-          {/* </View> */}
+          {/* Chart is moved outside this View */}
         </View>
       </View>
+
+      {/* Chart */}
+      <View style={styles.chartPlaceholder}>
+        {/* <View style={styles.chartContainer}> */}
+          <LineChart
+            areaChart
+            data={lineData}
+            width={width - 40}
+            height={200}
+            spacing={50} // Increased spacing
+            initialSpacing={25}
+            color="#2D6BFF"
+            thickness={2}
+            maxValue={120}
+            noOfSections={4}
+            yAxisTextStyle={{ color: 'gray' }} // Changed color to gray
+            yAxisLabelTexts={['0', '60', '80', '100', '120']}
+            yAxisTextNumberOfLines={1}
+            yAxisLabelWidth={30} // Increased label width
+            hideDataPoints={false}
+            startFillColor="rgba(45, 107, 255, 0.2)"
+            endFillColor="rgba(45, 107, 255, 0.0)"
+            startOpacity={0.9}
+            endOpacity={0.2}
+            backgroundColor="transparent"
+            rulesColor="#E5E5E5"
+            rulesType="solid"
+            xAxisColor="transparent"
+            pointerConfig={{
+              pointerStripHeight: 160,
+              pointerStripColor: 'lightgray',
+              pointerStripWidth: 2,
+              pointerColor: '#2D6BFF',
+              radius: 6,
+              pointerLabelWidth: 100,
+              pointerLabelHeight: 90,
+              activatePointersOnLongPress: true,
+              autoAdjustPointerLabelPosition: true,
+              pointerLabelComponent: (items) => {
+                return (
+                  <View style={{
+                    height: 90,
+                    width: 100, // Increased pointer label width
+                    backgroundColor: '#ffffff',
+                    borderRadius: 8,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}>
+                    <Text style={{color: 'black', fontSize: 14}}>{items[0].value} BPM</Text>
+                    <Text style={{color: 'black', fontSize: 12}}>{items[0].label}</Text>
+                  </View>
+                );
+              },
+            }}
+            curved
+          />
+        </View>
+      {/* </View> */}
     </View>
   )
 }
