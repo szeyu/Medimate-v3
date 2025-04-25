@@ -1,13 +1,16 @@
 import os
 import shutil
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uuid
 from OCRScanner import OCRScanner
+from voice_analyzer import VoiceAnalyzer
 import logging
 import base64
 from io import BytesIO
+import numpy as np
+import pandas as pd
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -33,6 +36,9 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 # Initialize OCR Scanner
 ocr_scanner = OCRScanner()
 
+# Initialize Voice Analyzer
+voice_analyzer = VoiceAnalyzer()
+
 class OCRRequest(BaseModel):
     image: str  # Base64 encoded image
 
@@ -45,6 +51,12 @@ class OCRResponse(BaseModel):
     start_date: str
     duration: str
     special_instructions: str
+
+class VoiceAnalysisResponse(BaseModel):
+    glucose_level: float
+    confidence_score: float
+    status: str
+    range_info: str
 
 @app.post("/process-medication-image", response_model=OCRResponse)
 async def process_image(request: OCRRequest):
@@ -124,6 +136,105 @@ async def process_text(text: str):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing text: {str(e)}")
+
+@app.post("/upload-voice", response_model=VoiceAnalysisResponse)
+async def upload_voice(file: UploadFile = File(...)):
+    """
+    Upload a voice file and predict glucose level
+    """
+    try:
+        # Create a temporary file path
+        temp_file_path = os.path.join(UPLOAD_DIR, f"{uuid.uuid4()}.wav")
+        
+        try:
+            # Save the uploaded file
+            with open(temp_file_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+            
+            # Extract features from the voice file
+            features = voice_analyzer.extract_voice_features(temp_file_path)
+            
+            # Predict glucose level
+            glucose_level, confidence = voice_analyzer.predict_glucose(features)
+            
+            # Determine status and range info
+            status = "Normal"
+            if glucose_level < 80:
+                status = "Low"
+                range_info = "Below normal range (<80 mg/dL)"
+            elif glucose_level > 120:
+                status = "High"
+                if glucose_level > 140:
+                    range_info = "Diabetic range (>140 mg/dL)"
+                else:
+                    range_info = "Pre-diabetic range (120-140 mg/dL)"
+            else:
+                range_info = "Normal range (80-120 mg/dL)"
+            
+            response = VoiceAnalysisResponse(
+                glucose_level=float(glucose_level),
+                confidence_score=float(confidence),
+                status=status,
+                range_info=range_info
+            )
+            
+            logger.info(f"Analysis response: {response}")
+            return response
+            
+        except Exception as e:
+            logger.error(f"Error processing voice file: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Error processing voice file: {str(e)}")
+        
+        finally:
+            # Clean up the temporary file
+            if os.path.exists(temp_file_path):
+                os.remove(temp_file_path)
+                
+    except Exception as e:
+        logger.error(f"Error in request processing: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Invalid request: {str(e)}")
+
+@app.post("/train-voice-model")
+async def train_voice_model(file: UploadFile = File(...)):
+    """
+    Upload training data and train the voice analysis model
+    """
+    try:
+        # Save the uploaded training data file
+        temp_file_path = os.path.join(UPLOAD_DIR, f"training_data_{uuid.uuid4()}.csv")
+        
+        try:
+            # Save the uploaded file
+            with open(temp_file_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+            
+            # Load training data
+            training_data = pd.read_csv(temp_file_path)
+            
+            # Assuming the CSV has columns for features and 'glucose_level'
+            X_train = training_data[voice_analyzer.feature_names].values
+            y_train = training_data['glucose_level'].values
+            
+            # Train the model
+            voice_analyzer.train_model(X_train, y_train)
+            
+            # Save the trained model
+            voice_analyzer.save_model()
+            
+            return {"message": "Model trained successfully"}
+            
+        except Exception as e:
+            logger.error(f"Error training model: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Error training model: {str(e)}")
+        
+        finally:
+            # Clean up the temporary file
+            if os.path.exists(temp_file_path):
+                os.remove(temp_file_path)
+                
+    except Exception as e:
+        logger.error(f"Error in request processing: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Invalid request: {str(e)}")
 
 @app.get("/")
 async def root():
