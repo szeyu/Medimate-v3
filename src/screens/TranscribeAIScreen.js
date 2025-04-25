@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -13,87 +13,125 @@ import {
   Alert,
   ActivityIndicator,
   Image,
-} from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+} from "react-native";
+import Icon from "react-native-vector-icons/MaterialIcons";
+import { Audio } from "expo-av";
+import {
+  transcribeAudio,
+  processTranscriptionData,
+} from "../services/TranscriptionService";
 // import * as Clipboard from 'expo-clipboard';
 
 const TranscribeAIScreen = ({ navigation, route }) => {
-  const [stage, setStage] = useState('initial'); // initial, recording, processing, result, saving
-  const [transcription, setTranscription] = useState('');
-  const [displayedTranscription, setDisplayedTranscription] = useState('');
-  const [summary, setSummary] = useState({});
-  const [title, setTitle] = useState('');
+  // Audio recording states
+  const [recording, setRecording] = useState(null);
+  const [sound, setSound] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+
+  const [stage, setStage] = useState("initial"); // initial, recording, processing, result, saving
+  const [transcription, setTranscription] = useState("");
+  const [displayedTranscription, setDisplayedTranscription] = useState("");
+  const [summary, setSummary] = useState({
+    title: "",
+    keyPoints: [],
+    medications: [],
+    followUp: "",
+  });
+  const [title, setTitle] = useState("");
   const [date, setDate] = useState(new Date());
   const [isCopied, setIsCopied] = useState(false);
   const [isStoppingRecording, setIsStoppingRecording] = useState(false);
-  
-  // Ref for recording timeout
-  const recordingTimeoutRef = useRef(null);
-  
+  const [recordingDuration, setRecordingDuration] = useState(0);
+  const [audioPermission, setAudioPermission] = useState(false);
+  const [recordingUri, setRecordingUri] = useState(null);
+  const [transcriptionError, setTranscriptionError] = useState(null);
+
+  // Ref for recording timer
+  const recordingTimerRef = useRef(null);
+
   // Refs for ScrollViews
   const recordingScrollViewRef = useRef(null);
   const resultScrollViewRef = useRef(null);
-  
+
   // Animation values
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const waveAnim1 = useRef(new Animated.Value(0)).current;
   const waveAnim2 = useRef(new Animated.Value(0)).current;
   const waveAnim3 = useRef(new Animated.Value(0)).current;
-  
-  // Sample transcription text - without speaker identification, only line breaks after periods
-  const fullTranscriptionText = "Good morning. How are you feeling today? I've been having some pain in my joints especially in the morning. It's been getting worse over the past few weeks. I see. Let's talk about your symptoms in more detail. Are you experiencing any swelling or redness around the painful joints? Yes especially in my fingers and wrists. They feel stiff for about an hour after I wake up. That could indicate inflammatory arthritis. I'm going to recommend some blood tests to check for markers of inflammation and autoimmune conditions. In the meantime I'd suggest taking ibuprofen to help with the pain and inflammation. Is ibuprofen safe to take with my blood pressure medication? That's a good question. Ibuprofen can sometimes interfere with blood pressure medications and may cause your blood pressure to rise. Let's try a lower dose of 200mg twice daily with food and monitor your blood pressure regularly. If you notice any significant changes stop taking it and call me immediately. How long should I take it for? Start with a 10-day course. If your symptoms improve we can discuss a longer-term plan after we get your test results back. Remember to always take it with food to protect your stomach.";
-  
-  // Format the text with line breaks after periods
-  const formattedTranscriptionText = fullTranscriptionText.replace(/\.\s+/g, '.\n\n');
-  
-  // Clean up timeouts when component unmounts
+
+  // Request audio recording permission when component mounts
   useEffect(() => {
-    return () => {
-      if (recordingTimeoutRef.current) {
-        clearTimeout(recordingTimeoutRef.current);
+    const requestPermission = async () => {
+      try {
+        const { status } = await Audio.requestPermissionsAsync();
+        setAudioPermission(status === "granted");
+
+        if (status !== "granted") {
+          Alert.alert(
+            "Permission Required",
+            "To use this feature, please allow access to your microphone.",
+            [{ text: "OK" }]
+          );
+        } else {
+          // Configure audio mode for recording
+          await Audio.setAudioModeAsync({
+            allowsRecordingIOS: true,
+            playsInSilentModeIOS: true,
+            staysActiveInBackground: false,
+            shouldDuckAndroid: true,
+          });
+        }
+      } catch (error) {
+        console.error("Error requesting microphone permission:", error);
+        Alert.alert("Error", "Could not request microphone permission");
       }
     };
+
+    requestPermission();
+
+    // Cleanup function for audio mode
+    return () => {
+      Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+        playsInSilentModeIOS: false,
+      });
+    };
   }, []);
-  
+
+  // Clean up timeouts and audio objects when component unmounts
+  useEffect(() => {
+    return () => {
+      if (recordingTimerRef.current) {
+        clearInterval(recordingTimerRef.current);
+      }
+
+      // Also make sure to stop any ongoing recording
+      if (recording) {
+        recording.stopAndUnloadAsync();
+      }
+
+      // Unload any playing audio
+      if (sound) {
+        sound.unloadAsync();
+      }
+    };
+  }, [recording, sound]);
+
   // Auto-scroll to bottom when transcription updates during recording
   useEffect(() => {
-    if (recordingScrollViewRef.current && stage === 'recording') {
+    if (recordingScrollViewRef.current && stage === "recording") {
       setTimeout(() => {
         recordingScrollViewRef.current.scrollToEnd({ animated: true });
       }, 50);
     }
   }, [displayedTranscription, stage]);
-  
-  // Typing effect for transcription - showing 2-3 words at a time
-  useEffect(() => {
-    if (stage === 'recording') {
-      // Split text into words
-      const words = formattedTranscriptionText.split(' ');
-      let currentWordIndex = 0;
-      
-      const typingInterval = setInterval(() => {
-        if (currentWordIndex < words.length) {
-          // Add 2-3 words at a time (randomly choose between 2 and 3)
-          const wordsToAdd = Math.floor(Math.random() * 2) + 2; // 2 or 3
-          const endIndex = Math.min(currentWordIndex + wordsToAdd, words.length);
-          const newWords = words.slice(0, endIndex).join(' ');
-          
-          setDisplayedTranscription(newWords);
-          currentWordIndex = endIndex;
-        } else {
-          clearInterval(typingInterval);
-        }
-      }, 300); // Adjust timing for natural reading speed
-      
-      return () => clearInterval(typingInterval);
-    }
-  }, [stage]);
-  
+
   // Start recording animations
   useEffect(() => {
     let pulseAnimation;
-    
-    if (stage === 'recording') {
+
+    if (stage === "recording") {
       // Pulse animation
       pulseAnimation = Animated.loop(
         Animated.sequence([
@@ -111,7 +149,7 @@ const TranscribeAIScreen = ({ navigation, route }) => {
           }),
         ])
       );
-      
+
       // Sound wave animations - using only transform properties
       Animated.loop(
         Animated.sequence([
@@ -129,7 +167,7 @@ const TranscribeAIScreen = ({ navigation, route }) => {
           }),
         ])
       ).start();
-      
+
       Animated.loop(
         Animated.sequence([
           Animated.timing(waveAnim2, {
@@ -146,7 +184,7 @@ const TranscribeAIScreen = ({ navigation, route }) => {
           }),
         ])
       ).start();
-      
+
       Animated.loop(
         Animated.sequence([
           Animated.timing(waveAnim3, {
@@ -163,123 +201,278 @@ const TranscribeAIScreen = ({ navigation, route }) => {
           }),
         ])
       ).start();
-      
+
       pulseAnimation.start();
-      
-      // Simulate recording for 15 seconds - store the timeout reference
-      recordingTimeoutRef.current = setTimeout(() => {
-        if (stage === 'recording') {
-          handleStopRecording();
-        }
-      }, 15000);
-      
+
+      // Timer for recording duration
+      let seconds = 0;
+      recordingTimerRef.current = setInterval(() => {
+        seconds++;
+        setRecordingDuration(seconds);
+      }, 1000);
+
       return () => {
         pulseAnimation && pulseAnimation.stop();
-        // Clear the timeout when the effect is cleaned up
-        if (recordingTimeoutRef.current) {
-          clearTimeout(recordingTimeoutRef.current);
-          recordingTimeoutRef.current = null;
+        if (recordingTimerRef.current) {
+          clearInterval(recordingTimerRef.current);
+          recordingTimerRef.current = null;
         }
       };
     }
   }, [stage]);
-  
-  const handleStartRecording = () => {
-    setStage('recording');
-    setDisplayedTranscription('');
-    setIsStoppingRecording(false);
+
+  // Format seconds to MM:SS format
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60)
+      .toString()
+      .padStart(2, "0");
+    const secs = (seconds % 60).toString().padStart(2, "0");
+    return `${mins}:${secs}`;
   };
-  
-  const handleStopRecording = () => {
-    // Prevent multiple calls to stop recording
-    if (isStoppingRecording) return;
-    
-    // Clear the automatic timeout
-    if (recordingTimeoutRef.current) {
-      clearTimeout(recordingTimeoutRef.current);
-      recordingTimeoutRef.current = null;
-    }
-    
-    setIsStoppingRecording(true);
-    setTranscription(displayedTranscription || formattedTranscriptionText);
-    setStage('processing');
-    
-    // Simulate processing for 3 seconds
-    setTimeout(() => {
-      setStage('result');
-      setSummary({
-        title: "Medical Consultation: Joint Pain and Medication",
-        keyPoints: [
-          "Patient experiencing joint pain and stiffness in the morning",
-          "Symptoms include swelling in fingers and wrists",
-          "Possible inflammatory arthritis",
-          "Recommended blood tests for inflammation markers",
-          "Prescribed ibuprofen 200mg twice daily with food"
-        ],
-        medications: [
-          "Ibuprofen 200mg - Take twice daily with food for 10 days"
-        ],
-        followUp: "Return after blood test results for longer-term plan"
-      });
-      setIsStoppingRecording(false);
-    }, 3000);
-  };
-  
-  const handleSave = () => {
-    setStage('saving');
-  };
-  
-  const handleConfirmSave = () => {
-    if (!title) {
-      Alert.alert('Error', 'Please enter a title for this transcription');
+
+  const handleStartRecording = async () => {
+    if (!audioPermission) {
+      Alert.alert(
+        "Permission Required",
+        "To use this feature, please allow access to your microphone.",
+        [{ text: "OK" }]
+      );
       return;
     }
-    
-    // Here you would typically save the data to your backend or local storage
-    Alert.alert(
-      'Success',
-      'Your transcription has been saved successfully!',
-      [
-        { 
-          text: 'OK', 
-          onPress: () => navigation.goBack() 
-        }
-      ]
-    );
+
+    try {
+      // Create new recording instance
+      const { recording: newRecording } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      );
+      setRecording(newRecording);
+
+      setStage("recording");
+      setDisplayedTranscription("");
+      setIsStoppingRecording(false);
+      setRecordingDuration(0);
+    } catch (error) {
+      console.error("Error starting recording:", error);
+      Alert.alert(
+        "Recording Error",
+        "Could not start recording. Please try again."
+      );
+    }
   };
-  
+
+  const handleStopRecording = async () => {
+    // Prevent multiple calls to stop recording
+    if (isStoppingRecording || !recording) return;
+
+    // Clear the timer interval
+    if (recordingTimerRef.current) {
+      clearInterval(recordingTimerRef.current);
+      recordingTimerRef.current = null;
+    }
+
+    setIsStoppingRecording(true);
+
+    try {
+      // Stop the recording
+      await recording.stopAndUnloadAsync();
+      const uri = recording.getURI();
+      console.log("Recording saved at:", uri);
+      setRecordingUri(uri);
+      setRecording(null);
+
+      // Move to processing stage
+      setStage("processing");
+      setIsTranscribing(true);
+      setTranscriptionError(null);
+
+      // Send the audio file to AssemblyAI for transcription
+      try {
+        const transcriptResult = await transcribeAudio(uri);
+        console.log("Transcription result:", transcriptResult);
+
+        const processedTranscription =
+          processTranscriptionData(transcriptResult);
+
+        // Update the UI with the transcription results
+        setTranscription(processedTranscription.text);
+
+        // For the demo, generate some basic summary points from the transcription
+        if (processedTranscription.text) {
+          generateBasicSummary(processedTranscription.text);
+        }
+
+        setStage("result");
+        setIsTranscribing(false);
+      } catch (error) {
+        console.error("Transcription error:", error);
+        setTranscriptionError("Failed to transcribe audio. Please try again.");
+        Alert.alert(
+          "Transcription Error",
+          "Could not transcribe the recording. Please try again."
+        );
+        setStage("result"); // Still go to result to show the error
+        setIsTranscribing(false);
+      }
+    } catch (error) {
+      console.error("Error stopping recording:", error);
+      Alert.alert(
+        "Recording Error",
+        "Could not save the recording. Please try again."
+      );
+      setIsStoppingRecording(false);
+      setStage("initial");
+      setRecording(null);
+    }
+  };
+
+  // Helper function to generate a basic summary from transcription text
+  const generateBasicSummary = (text) => {
+    // Basic extraction of medication names (this would be replaced by actual AI processing)
+    const medicationPatterns = [
+      /\b(?:advil|tylenol|aspirin|ibuprofen|paracetamol|acetaminophen)\b/gi,
+      /\b\d+\s*mg\b/g,
+    ];
+
+    let medications = [];
+
+    // Extract potential medications
+    for (const pattern of medicationPatterns) {
+      const matches = text.match(pattern);
+      if (matches) {
+        medications = [...medications, ...matches];
+      }
+    }
+
+    // Find sentences that might be important (containing key medical terms)
+    const sentences = text.split(/[.!?]+/).filter((s) => s.trim().length > 0);
+    const keyPoints = sentences
+      .filter((sentence) =>
+        /pain|symptom|test|recommend|treatment|diagnosis|condition/i.test(
+          sentence
+        )
+      )
+      .slice(0, 3)
+      .map((s) => s.trim());
+
+    // Extract potential follow-up instructions
+    const followUpInfo = text.match(
+      /(?:follow[\s-]up|come back|return|next appointment).{3,50}/i
+    );
+
+    setSummary({
+      title: "Medical Consultation Summary",
+      keyPoints: keyPoints.length > 0 ? keyPoints : [],
+      medications: medications.length > 0 ? [...new Set(medications)] : [],
+      followUp: followUpInfo ? followUpInfo[0].trim() : "",
+    });
+  };
+
+  const handlePlayRecording = async () => {
+    try {
+      // Unload any existing sound first
+      if (sound) {
+        await sound.unloadAsync();
+      }
+
+      // Check if we have a recording URI
+      if (!recordingUri) {
+        Alert.alert("Error", "No recording available to play");
+        return;
+      }
+
+      console.log("Loading sound from:", recordingUri);
+
+      // Load the recording
+      const { sound: newSound } = await Audio.Sound.createAsync(
+        { uri: recordingUri },
+        { shouldPlay: true },
+        onPlaybackStatusUpdate
+      );
+
+      setSound(newSound);
+      setIsPlaying(true);
+
+      // Play the sound
+      await newSound.playAsync();
+    } catch (error) {
+      console.error("Error playing audio:", error);
+      Alert.alert("Playback Error", "Could not play the recording");
+      setIsPlaying(false);
+    }
+  };
+
+  const handleStopPlayback = async () => {
+    if (sound) {
+      await sound.stopAsync();
+      setIsPlaying(false);
+    }
+  };
+
+  // Handle audio playback status updates
+  const onPlaybackStatusUpdate = (status) => {
+    if (status.didJustFinish) {
+      setIsPlaying(false);
+    }
+  };
+
+  const handleSave = () => {
+    setStage("saving");
+  };
+
+  const handleConfirmSave = () => {
+    if (!title) {
+      Alert.alert("Error", "Please enter a title for this transcription");
+      return;
+    }
+
+    // Here you would typically save the data to your backend or local storage
+    Alert.alert("Success", "Your transcription has been saved successfully!", [
+      {
+        text: "OK",
+        onPress: () => navigation.goBack(),
+      },
+    ]);
+  };
+
   const handleNewRecording = () => {
-    setStage('initial');
-    setDisplayedTranscription('');
-    setTranscription('');
-    setSummary({});
-    setTitle('');
+    setStage("initial");
+    setDisplayedTranscription("");
+    setTranscription("");
+    setSummary({
+      title: "",
+      keyPoints: [],
+      medications: [],
+      followUp: "",
+    });
+    setTitle("");
     setIsCopied(false);
     setIsStoppingRecording(false);
+    setRecordingUri(null);
   };
-  
+
   const handleCopyToClipboard = async () => {
     const summaryText = `
       ${summary.title}
       
       Key Points:
-      ${summary.keyPoints.map(point => `• ${point}`).join('\n')}
+      ${summary.keyPoints.map((point) => `• ${point}`).join("\n")}
       
       Medications:
-      ${summary.medications.map(med => `• ${med}`).join('\n')}
+      ${summary.medications.map((med) => `• ${med}`).join("\n")}
       
       Follow-up:
       ${summary.followUp}
     `;
-    
+
+    // In a real implementation, you would use Clipboard.setStringAsync(summaryText)
     // await Clipboard.setStringAsync(summaryText);
     setIsCopied(true);
-    
+
     setTimeout(() => {
       setIsCopied(false);
     }, 3000);
   };
-  
+
   // Custom App Bar component
   const CustomAppBar = ({ navigation, title }) => (
     <View style={styles.appBar}>
@@ -295,19 +488,22 @@ const TranscribeAIScreen = ({ navigation, route }) => {
       </View>
     </View>
   );
-  
+
   // Render the initial screen with start recording button
   const renderInitialScreen = () => (
     <View style={styles.initialContainer}>
       <View style={styles.initialContent}>
-        <Text style={styles.initialTitle}>Transcribe Medical Conversations</Text>
+        <Text style={styles.initialTitle}>
+          Transcribe Medical Conversations
+        </Text>
         <Text style={styles.initialDescription}>
-          Record and transcribe your medical conversations to get AI-powered summaries and key points.
+          Record and transcribe your medical conversations to get AI-powered
+          summaries and key points.
         </Text>
       </View>
-      
+
       <View style={styles.buttonSafeArea}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.startRecordingButton}
           onPress={handleStartRecording}
         >
@@ -317,104 +513,92 @@ const TranscribeAIScreen = ({ navigation, route }) => {
       </View>
     </View>
   );
-  
+
   // Render the recording screen with waveform animation
   const renderRecordingScreen = () => (
     <View style={styles.recordingContainer}>
       <View style={styles.recordingHeader}>
         <Text style={styles.recordingTitle}>Recording...</Text>
-        <Text style={styles.recordingTimer}>00:15</Text>
+        <Text style={styles.recordingTimer}>
+          {formatTime(recordingDuration)}
+        </Text>
       </View>
-      
+
       <View style={styles.waveformContainer}>
-        <Animated.View 
+        <Animated.View
           style={[
             styles.recordingCircle,
             {
-              transform: [
-                { scale: pulseAnim }
-              ]
-            }
+              transform: [{ scale: pulseAnim }],
+            },
           ]}
         >
           <Icon name="mic" size={32} color="#FFFFFF" />
         </Animated.View>
-        
+
         <View style={styles.waveformWrapper}>
-          <Animated.View 
+          <Animated.View
             style={[
               styles.waveformBar,
               {
-                transform: [
-                  { scaleY: waveAnim1 },
-                  { translateY: 0 }
-                ]
-              }
+                transform: [{ scaleY: waveAnim1 }, { translateY: 0 }],
+              },
             ]}
           />
-          <Animated.View 
+          <Animated.View
             style={[
               styles.waveformBar,
               {
-                transform: [
-                  { scaleY: waveAnim2 },
-                  { translateY: 0 }
-                ]
-              }
+                transform: [{ scaleY: waveAnim2 }, { translateY: 0 }],
+              },
             ]}
           />
-          <Animated.View 
+          <Animated.View
             style={[
               styles.waveformBar,
               {
-                transform: [
-                  { scaleY: waveAnim3 },
-                  { translateY: 0 }
-                ]
-              }
+                transform: [{ scaleY: waveAnim3 }, { translateY: 0 }],
+              },
             ]}
           />
-          <Animated.View 
+          <Animated.View
             style={[
               styles.waveformBar,
               {
-                transform: [
-                  { scaleY: waveAnim1 },
-                  { translateY: 0 }
-                ]
-              }
+                transform: [{ scaleY: waveAnim1 }, { translateY: 0 }],
+              },
             ]}
           />
-          <Animated.View 
+          <Animated.View
             style={[
               styles.waveformBar,
               {
-                transform: [
-                  { scaleY: waveAnim2 },
-                  { translateY: 0 }
-                ]
-              }
+                transform: [{ scaleY: waveAnim2 }, { translateY: 0 }],
+              },
             ]}
           />
         </View>
       </View>
-      
+
       <View style={styles.transcriptionPreviewContainer}>
-        <Text style={styles.transcriptionPreviewTitle}>Transcription Preview</Text>
-        <ScrollView 
+        <Text style={styles.transcriptionPreviewTitle}>
+          Transcription Preview
+        </Text>
+        <ScrollView
           ref={recordingScrollViewRef}
           style={styles.transcriptionPreviewContent}
           showsVerticalScrollIndicator={true}
           contentContainerStyle={{ paddingBottom: 20 }}
         >
           <Text style={styles.transcriptionPreviewText}>
-            {displayedTranscription}
+            {displayedTranscription ||
+              "The transcription will appear here while recording..."}
           </Text>
         </ScrollView>
       </View>
-      
+
       <View style={styles.buttonSafeArea}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.stopRecordingButton}
           onPress={handleStopRecording}
           disabled={isStoppingRecording}
@@ -425,93 +609,148 @@ const TranscribeAIScreen = ({ navigation, route }) => {
       </View>
     </View>
   );
-  
+
   // Render the processing screen with loading indicator
   const renderProcessingScreen = () => (
     <View style={styles.processingContainer}>
       <ActivityIndicator size="large" color="#1167FE" />
-      <Text style={styles.processingText}>Processing your recording...</Text>
+      <Text style={styles.processingText}>
+        {isTranscribing
+          ? "Transcribing your audio... This may take a minute."
+          : "Processing your recording..."}
+      </Text>
     </View>
   );
-  
+
   // Render the result screen with summary and transcription
   const renderResultScreen = () => (
-    <ScrollView 
+    <ScrollView
       ref={resultScrollViewRef}
       style={styles.resultContainer}
       showsVerticalScrollIndicator={true}
       contentContainerStyle={{ paddingBottom: 100 }}
     >
       <View style={styles.resultHeader}>
-        <Text style={styles.resultTitle}>{summary.title}</Text>
-        <TouchableOpacity 
-          style={[
-            styles.copyButton,
-            isCopied ? styles.copiedButton : null
-          ]}
+        <Text style={styles.resultTitle}>
+          {summary.title || "Transcription Result"}
+        </Text>
+        <TouchableOpacity
+          style={[styles.copyButton, isCopied ? styles.copiedButton : null]}
           onPress={handleCopyToClipboard}
         >
-          <Icon name={isCopied ? "check" : "content-copy"} size={16} color={isCopied ? "#FFFFFF" : "#1167FE"} />
-          <Text style={[
-            styles.copyButtonText,
-            isCopied ? styles.copiedButtonText : null
-          ]}>
+          <Icon
+            name={isCopied ? "check" : "content-copy"}
+            size={16}
+            color={isCopied ? "#FFFFFF" : "#1167FE"}
+          />
+          <Text
+            style={[
+              styles.copyButtonText,
+              isCopied ? styles.copiedButtonText : null,
+            ]}
+          >
             {isCopied ? "Copied!" : "Copy Summary"}
           </Text>
         </TouchableOpacity>
       </View>
-      
+
+      {/* Audio playback control */}
+      <View style={styles.audioPlayerContainer}>
+        <TouchableOpacity
+          style={styles.playButton}
+          onPress={isPlaying ? handleStopPlayback : handlePlayRecording}
+        >
+          <Icon
+            name={isPlaying ? "stop" : "play-arrow"}
+            size={20}
+            color="#FFFFFF"
+          />
+          <Text style={styles.playButtonText}>
+            {isPlaying ? "Stop Audio" : "Play Recording"}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       <View style={styles.summarySection}>
         <Text style={styles.sectionTitle}>Key Points</Text>
-        {summary.keyPoints && summary.keyPoints.map((point, index) => (
-          <View key={index} style={styles.keyPointItem}>
-            <Icon name="check-circle" size={16} color="#4CAF50" style={styles.keyPointIcon} />
-            <Text style={styles.keyPointText}>{point}</Text>
-          </View>
-        ))}
+        {summary.keyPoints && summary.keyPoints.length > 0 ? (
+          summary.keyPoints.map((point, index) => (
+            <View key={index} style={styles.keyPointItem}>
+              <Icon
+                name="check-circle"
+                size={16}
+                color="#4CAF50"
+                style={styles.keyPointIcon}
+              />
+              <Text style={styles.keyPointText}>{point}</Text>
+            </View>
+          ))
+        ) : (
+          <Text style={styles.emptyText}>No key points available yet.</Text>
+        )}
       </View>
-      
+
       <View style={styles.summarySection}>
         <Text style={styles.sectionTitle}>Medications</Text>
         <View style={styles.medicationsContainer}>
-          {summary.medications && summary.medications.map((medication, index) => (
-            <View key={index} style={styles.medicationItem}>
-              <Icon name="medication" size={16} color="#1167FE" style={styles.medicationIcon} />
-              <Text style={styles.medicationText}>{medication}</Text>
-            </View>
-          ))}
+          {summary.medications && summary.medications.length > 0 ? (
+            summary.medications.map((medication, index) => (
+              <View key={index} style={styles.medicationItem}>
+                <Icon
+                  name="medication"
+                  size={16}
+                  color="#1167FE"
+                  style={styles.medicationIcon}
+                />
+                <Text style={styles.medicationText}>{medication}</Text>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.emptyText}>No medications identified.</Text>
+          )}
         </View>
-        
+
         <Text style={styles.sectionTitle}>Follow-up</Text>
         <View style={styles.followUpContainer}>
-          <Text style={styles.followUpText}>{summary.followUp}</Text>
+          {summary.followUp ? (
+            <Text style={styles.followUpText}>{summary.followUp}</Text>
+          ) : (
+            <Text style={styles.emptyText}>
+              No follow-up information available.
+            </Text>
+          )}
         </View>
       </View>
-      
+
       <View style={styles.transcriptionSection}>
         <View style={styles.transcriptionHeader}>
           <Text style={styles.transcriptionTitle}>Full Transcription</Text>
         </View>
-        <ScrollView 
+        <ScrollView
           style={styles.transcriptionContent}
           nestedScrollEnabled={true}
           showsVerticalScrollIndicator={true}
         >
-          <Text style={styles.transcriptionFullText}>{transcription}</Text>
+          {transcription ? (
+            <Text style={styles.transcriptionFullText}>{transcription}</Text>
+          ) : transcriptionError ? (
+            <Text style={styles.errorText}>{transcriptionError}</Text>
+          ) : (
+            <Text style={styles.emptyText}>
+              Transcription will appear here when available.
+            </Text>
+          )}
         </ScrollView>
       </View>
-      
+
       <View style={styles.buttonSafeArea}>
         <View style={styles.resultActions}>
-          <TouchableOpacity 
-            style={styles.saveButton}
-            onPress={handleSave}
-          >
+          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
             <Icon name="save" size={24} color="#FFFFFF" />
             <Text style={styles.saveButtonText}>Save Transcription</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={styles.newRecordingButton}
             onPress={handleNewRecording}
           >
@@ -522,13 +761,13 @@ const TranscribeAIScreen = ({ navigation, route }) => {
       </View>
     </ScrollView>
   );
-  
+
   // Render the saving screen with form
   const renderSavingScreen = () => (
     <View style={styles.savingContainer}>
       <View style={styles.saveForm}>
         <Text style={styles.saveTitle}>Save Transcription</Text>
-        
+
         <View style={styles.formField}>
           <Text style={styles.fieldLabel}>Title</Text>
           <TextInput
@@ -538,24 +777,24 @@ const TranscribeAIScreen = ({ navigation, route }) => {
             placeholder="Enter a title for this transcription"
           />
         </View>
-        
+
         <View style={styles.formField}>
           <Text style={styles.fieldLabel}>Date</Text>
           <View style={styles.dateField}>
             <Icon name="event" size={20} color="#666666" />
             <Text style={styles.dateText}>
-              {date.toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
+              {date.toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
               })}
             </Text>
           </View>
         </View>
       </View>
-      
+
       <View style={styles.buttonSafeArea}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.confirmButton}
           onPress={handleConfirmSave}
         >
@@ -564,46 +803,60 @@ const TranscribeAIScreen = ({ navigation, route }) => {
       </View>
     </View>
   );
-  
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor="#FFFFFF" barStyle="dark-content" />
-      <CustomAppBar 
-        navigation={navigation} 
-        title="Transcribe AI" 
-      />
-      
-      {stage === 'initial' && renderInitialScreen()}
-      {stage === 'recording' && renderRecordingScreen()}
-      {stage === 'processing' && renderProcessingScreen()}
-      {stage === 'result' && renderResultScreen()}
-      {stage === 'saving' && renderSavingScreen()}
+      <CustomAppBar navigation={navigation} title="Transcribe AI" />
+
+      {stage === "initial" && renderInitialScreen()}
+      {stage === "recording" && renderRecordingScreen()}
+      {stage === "processing" && renderProcessingScreen()}
+      {stage === "result" && renderResultScreen()}
+      {stage === "saving" && renderSavingScreen()}
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  // ... existing styles ...
+
+  // Add a new style for empty state messages
+  emptyText: {
+    fontSize: 14,
+    color: "#999999",
+    fontStyle: "italic",
+    marginVertical: 8,
+  },
+
+  // Add a new style for error text
+  errorText: {
+    fontSize: 14,
+    color: "#FF5252",
+    marginVertical: 8,
+  },
+
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: "#F8F9FA",
   },
   appBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#FFFFFF",
     height: 56,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#EEEEEE',
+    borderBottomColor: "#EEEEEE",
   },
   backButton: {
     padding: 8,
   },
   appBarTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333333',
+    fontWeight: "bold",
+    color: "#333333",
   },
   appBarRight: {
     width: 40,
@@ -611,13 +864,13 @@ const styles = StyleSheet.create({
   initialContainer: {
     flex: 1,
     padding: 16,
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
     paddingBottom: 100,
   },
   initialContent: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   illustration: {
     width: 200,
@@ -626,32 +879,32 @@ const styles = StyleSheet.create({
   },
   initialTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333333',
+    fontWeight: "bold",
+    color: "#333333",
     marginBottom: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
   initialDescription: {
     fontSize: 16,
-    color: '#666666',
-    textAlign: 'center',
+    color: "#666666",
+    textAlign: "center",
     lineHeight: 24,
   },
   buttonSafeArea: {
     marginBottom: 30,
   },
   startRecordingButton: {
-    backgroundColor: '#1167FE',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#1167FE",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 16,
     borderRadius: 8,
   },
   startRecordingText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginLeft: 8,
   },
   recordingContainer: {
@@ -660,60 +913,60 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   recordingHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 24,
   },
   recordingTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333333',
+    fontWeight: "bold",
+    color: "#333333",
   },
   recordingTimer: {
     fontSize: 16,
-    color: '#FF5252',
-    fontWeight: '600',
+    color: "#FF5252",
+    fontWeight: "600",
   },
   waveformContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 24,
   },
   recordingCircle: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#1167FE',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#1167FE",
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 24,
   },
   waveformWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     height: 60,
   },
   waveformBar: {
     width: 4,
     height: 40,
-    backgroundColor: '#1167FE',
+    backgroundColor: "#1167FE",
     borderRadius: 2,
     marginHorizontal: 4,
   },
   transcriptionPreviewContainer: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 8,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#EEEEEE',
+    borderColor: "#EEEEEE",
   },
   transcriptionPreviewTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#333333',
+    fontWeight: "600",
+    color: "#333333",
     marginBottom: 12,
   },
   transcriptionPreviewContent: {
@@ -721,32 +974,32 @@ const styles = StyleSheet.create({
   },
   transcriptionPreviewText: {
     fontSize: 14,
-    color: '#666666',
+    color: "#666666",
     lineHeight: 20,
   },
   stopRecordingButton: {
-    backgroundColor: '#FF5252',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#FF5252",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 16,
     borderRadius: 8,
   },
   stopRecordingText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginLeft: 8,
   },
   processingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 16,
   },
   processingText: {
     fontSize: 16,
-    color: '#666666',
+    color: "#666666",
     marginTop: 16,
   },
   resultContainer: {
@@ -754,58 +1007,77 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   resultHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
     marginBottom: 16,
   },
   resultTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333333',
+    fontWeight: "bold",
+    color: "#333333",
     flex: 1,
     marginRight: 16,
   },
   copyButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: '#1167FE',
+    borderColor: "#1167FE",
     marginTop: 4,
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
   },
   copyButtonText: {
-    color: '#1167FE',
+    color: "#1167FE",
     fontSize: 14,
     marginLeft: 8,
   },
   copiedButton: {
-    backgroundColor: '#4CAF50',
-    borderColor: '#4CAF50',
+    backgroundColor: "#4CAF50",
+    borderColor: "#4CAF50",
   },
   copiedButtonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
+  },
+  audioPlayerContainer: {
+    marginBottom: 16,
+  },
+  playButton: {
+    backgroundColor: "#1167FE",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignSelf: "flex-start",
+  },
+  playButtonText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "600",
+    marginLeft: 8,
   },
   summarySection: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 8,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#EEEEEE',
+    borderColor: "#EEEEEE",
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#333333',
+    fontWeight: "600",
+    color: "#333333",
     marginBottom: 12,
   },
   keyPointItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    alignItems: "flex-start",
     marginBottom: 8,
   },
   keyPointIcon: {
@@ -814,15 +1086,15 @@ const styles = StyleSheet.create({
   },
   keyPointText: {
     fontSize: 14,
-    color: '#666666',
+    color: "#666666",
     flex: 1,
   },
   medicationsContainer: {
     marginBottom: 16,
   },
   medicationItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 8,
   },
   medicationIcon: {
@@ -830,92 +1102,92 @@ const styles = StyleSheet.create({
   },
   medicationText: {
     fontSize: 14,
-    color: '#666666',
+    color: "#666666",
   },
   followUpContainer: {
     marginBottom: 8,
   },
   followUpText: {
     fontSize: 14,
-    color: '#666666',
+    color: "#666666",
   },
   transcriptionSection: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 8,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#EEEEEE',
+    borderColor: "#EEEEEE",
   },
   transcriptionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 12,
   },
   transcriptionTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#333333',
+    fontWeight: "600",
+    color: "#333333",
   },
   transcriptionContent: {
     maxHeight: 200,
   },
   transcriptionFullText: {
     fontSize: 14,
-    color: '#666666',
+    color: "#666666",
     lineHeight: 20,
   },
   resultActions: {
     marginBottom: 0,
   },
   saveButton: {
-    backgroundColor: '#1167FE',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#1167FE",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 16,
     borderRadius: 8,
     marginBottom: 12,
   },
   saveButtonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginLeft: 8,
   },
   newRecordingButton: {
-    backgroundColor: '#F5F5F5',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#F5F5F5",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 16,
     borderRadius: 8,
   },
   newRecordingText: {
-    color: '#666666',
+    color: "#666666",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginLeft: 8,
   },
   savingContainer: {
     flex: 1,
     padding: 16,
     paddingBottom: 100,
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
   },
   saveForm: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 8,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#EEEEEE',
+    borderColor: "#EEEEEE",
     marginBottom: 20,
   },
   saveTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333333',
+    fontWeight: "bold",
+    color: "#333333",
     marginBottom: 16,
   },
   formField: {
@@ -923,45 +1195,45 @@ const styles = StyleSheet.create({
   },
   fieldLabel: {
     fontSize: 14,
-    color: '#666666',
+    color: "#666666",
     marginBottom: 8,
   },
   dateField: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F8F9FA',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F8F9FA",
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#EEEEEE',
+    borderColor: "#EEEEEE",
     paddingHorizontal: 12,
     paddingVertical: 12,
   },
   dateText: {
     fontSize: 16,
-    color: '#333333',
+    color: "#333333",
     marginLeft: 8,
   },
   titleInput: {
-    backgroundColor: '#F8F9FA',
+    backgroundColor: "#F8F9FA",
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#EEEEEE',
+    borderColor: "#EEEEEE",
     paddingHorizontal: 12,
     paddingVertical: 12,
     fontSize: 16,
-    color: '#333333',
+    color: "#333333",
   },
   confirmButton: {
-    backgroundColor: '#1167FE',
+    backgroundColor: "#1167FE",
     borderRadius: 8,
     paddingVertical: 16,
-    alignItems: 'center',
+    alignItems: "center",
   },
   confirmButtonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
 
-export default TranscribeAIScreen; 
+export default TranscribeAIScreen;
