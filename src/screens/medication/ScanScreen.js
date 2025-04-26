@@ -15,9 +15,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Ionicons } from '@expo/vector-icons';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImageManipulator from 'expo-image-manipulator';
-
-// Add API_URL constant at the top after imports
-const API_URL = 'http://192.168.100.16:8000'; // Local network IP address
+import { API_URL } from '../../config/env';
 
 const { width, height } = Dimensions.get('window');
 

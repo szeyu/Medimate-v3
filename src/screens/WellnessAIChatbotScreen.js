@@ -13,6 +13,7 @@ import {
   StatusBar,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { API_URL } from '../config/env';
 
 const WellnessAIChatbotScreen = ({ navigation }) => {
   const [messages, setMessages] = useState([
@@ -95,7 +96,7 @@ const WellnessAIChatbotScreen = ({ navigation }) => {
       setStreamingText('');
 
       // Make API call to backend
-      const response = await fetch('http://192.168.100.16:8000/chat', {
+      const response = await fetch(`${API_URL}/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
