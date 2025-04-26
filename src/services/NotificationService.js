@@ -62,7 +62,7 @@ class NotificationService {
         soundName: "default", // Different sound for alerts
         importance: Importance.HIGH,
         vibrate: true,
-        vibration: 1000, // Longer vibration for alerts
+        vibration: 1000, // Longer vibration for alertsx
       },
       (created) => console.log(`Health alerts channel created: '${created}'`)
     );

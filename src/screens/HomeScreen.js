@@ -91,11 +91,11 @@ const HomeScreen = ({ navigation }) => {
     // Set a timeout to show a medication reminder notification after 10 seconds
     const notificationTimer = setTimeout(() => {
       showMedicationReminder();
-    }, 10000); // 10 seconds
+    }, 250000); // 10 seconds
 
     const healthAlertTimer = setTimeout(() => {
       showHealthAlert();
-    }, 20000); // 15 seconds
+    }, 260000); // 15 seconds
 
     // Clean up the timer when component unmounts
     return () => {
