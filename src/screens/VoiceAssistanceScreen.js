@@ -46,7 +46,6 @@ const VoiceAssistanceScreen = ({ navigation }) => {
   const [isStoppingRecording, setIsStoppingRecording] = useState(false); // Prevent double stops
 
   const scrollViewRef = useRef(null);
-  const durationInterval = useRef(null);
 
   // Animation refs
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -186,30 +185,20 @@ const VoiceAssistanceScreen = ({ navigation }) => {
   const onPlaybackStatusUpdate = (status) => { /* ... keep existing logic ... */ };
   // -----------------------------------------------------------
 
-  // Update duration during recording
-  const updateDuration = async () => {
-    if (recording) {
-      try {
-        const status = await recording.getStatusAsync();
-        if (status.isRecording && status.durationMillis) {
-          setCurrentDuration(calculateDuration(status.durationMillis));
-        }
-      } catch (error) {
-        console.error('Error updating duration:', error);
-        // Stop timer if error occurs
-        if (durationInterval.current) {
-          clearInterval(durationInterval.current);
-          durationInterval.current = null;
-        }
-      }
-    } else {
-       // Ensure timer stops if recording becomes null unexpectedly
-       if (durationInterval.current) {
-          clearInterval(durationInterval.current);
-          durationInterval.current = null;
-       }
+  // --- NEW: Callback for Recording Status Updates ---
+  const onRecordingStatusUpdate = (status) => {
+    if (!status.isRecording) {
+      // Recording stopped unexpectedly or finished
+      // You might want to handle this case, e.g., reset duration display
+      // setCurrentDuration('0:00'); // Optional: Reset if needed
+      return;
+    }
+    // Update duration display when recording status updates
+    if (status.durationMillis) {
+      setCurrentDuration(calculateDuration(status.durationMillis));
     }
   };
+  // ---------------------------------------------
 
   // --- Start Recording (Adapted from TranscribeAIScreen) ---
   const startRecording = async () => {
@@ -224,51 +213,62 @@ const VoiceAssistanceScreen = ({ navigation }) => {
       const { recording: newRecording } = await Audio.Recording.createAsync(
          Audio.RecordingOptionsPresets.HIGH_QUALITY
       );
+
+      // --- SET STATUS UPDATE CALLBACK ---
+      newRecording.setOnRecordingStatusUpdate(onRecordingStatusUpdate);
+      // --------------------------------
+
       setRecording(newRecording);
       setRecordingStatus('recording');
       setIsListening(true); // Indicate mic is active
       setIsStoppingRecording(false);
       setCurrentDuration('0:00');
 
-      // Start duration timer
-      durationInterval.current = setInterval(updateDuration, 1000);
       console.log('Recording started');
     } catch (err) {
       console.error('Failed to start recording', err);
       Alert.alert('Recording Error', 'Could not start recording.');
       setRecordingStatus('stopped');
       setIsListening(false);
-      if (durationInterval.current) clearInterval(durationInterval.current);
     }
   };
 
   // --- Stop Recording, Transcribe, and Send to Chat (Adapted) ---
   const stopRecording = async () => {
-    if (isStoppingRecording || !recording) return;
-
-    console.log('Attempting to stop recording...');
-    setIsStoppingRecording(true);
-    setIsListening(false); // Mic is no longer actively listening
-
-    // Clear duration timer
-    if (durationInterval.current) {
-      clearInterval(durationInterval.current);
-      durationInterval.current = null;
+    // Prevent multiple calls or stopping when not recording
+    if (isStoppingRecording || !recording) {
+       console.log("Stop recording called but conditions not met:", {isStoppingRecording, recordingExists: !!recording});
+       return;
     }
 
+    console.log('Attempting to stop recording...');
+    setIsStoppingRecording(true); // Set flag immediately
+    setIsListening(false); // Mic is no longer actively listening
+
     try {
+      // --- CLEAR STATUS UPDATE CALLBACK ---
+      // Important to prevent updates after unload
+      if (recording) {
+        recording.setOnRecordingStatusUpdate(null);
+      }
+      // ----------------------------------
+
       await recording.stopAndUnloadAsync();
       const uri = recording.getURI();
       console.log('Recording stopped and stored at', uri);
-      setRecording(null); // Clear recording instance
+      setRecording(null); // Clear recording instance *after* getting URI
       setRecordingStatus('stopped');
+      setIsStoppingRecording(false); // <<< RESET isStoppingRecording HERE
+
+      // Reset duration display after stopping
+      setCurrentDuration('0:00');
 
       if (uri) {
         // --- Transcribe Audio ---
         setIsProcessing(true); // Show processing indicator
         try {
           console.log('Transcribing audio from URI:', uri);
-          const transcriptionResult = await transcribeAudio(uri);
+          const transcriptionResult = await transcribeAudio(uri); // Use the service
           console.log('Raw transcription result:', transcriptionResult);
 
           const processedData = processTranscriptionData(transcriptionResult);
@@ -276,7 +276,7 @@ const VoiceAssistanceScreen = ({ navigation }) => {
           console.log('Processed transcription text:', transcribedText);
 
           if (transcribedText && transcribedText.trim() !== '') {
-             // Display user's transcribed message
+             // Display user's transcribed message immediately
              handleNewMessage({
                source: 'user',
                type: 'text', // Display as text
@@ -284,39 +284,44 @@ const VoiceAssistanceScreen = ({ navigation }) => {
              });
 
              // Send transcribed text to the backend chat endpoint
+             // NOTE: sendInputToChatbot will handle setting isProcessing to false in its finally block
              await sendInputToChatbot(transcribedText);
           } else {
-             console.log('Transcription result was empty.');
+             console.log('Transcription result was empty or only whitespace.');
              Alert.alert("Transcription", "Could not understand audio or no speech detected.");
-             setIsProcessing(false); // Hide indicator
+             setIsProcessing(false); // Hide indicator if transcription is empty
           }
         } catch (transcriptionError) {
-          console.error('Transcription failed:', transcriptionError);
-          Alert.alert('Transcription Error', 'Sorry, I could not process the audio.');
-          setIsProcessing(false); // Hide indicator
+          console.error('Transcription or processing failed:', transcriptionError);
+          Alert.alert('Transcription Error', 'Sorry, I could not process the audio. Please try again.');
+          setIsProcessing(false); // Hide indicator on transcription error
         }
-        // ------------------------
+        // -------------------------------
       } else {
         console.warn('Recording URI is null after stopping.');
         Alert.alert("Recording Error", "Could not retrieve the recorded audio file.");
-        setIsProcessing(false); // Hide indicator
-        setIsStoppingRecording(false); // Reset flag on URI error
+        setIsProcessing(false); // Hide indicator if URI is missing
+        // No need to set isStoppingRecording here, already done above
       }
     } catch (err) {
       console.error('Failed to stop/unload recording', err);
       Alert.alert('Recording Error', 'Could not properly stop the recording.');
+      // Reset states carefully on error
       setRecordingStatus('stopped');
       setRecording(null);
-      setIsStoppingRecording(false);
-      setIsProcessing(false); // Ensure indicator is hidden on error
+      setIsStoppingRecording(false); // Ensure reset in catch block too
+      setIsProcessing(false); // Ensure indicator is hidden on stop/unload error
+      setCurrentDuration('0:00'); // Reset duration on error too
     }
+    // Note: isProcessing is handled within the transcription try/catch and sendInputToChatbot's finally block
   };
   // ----------------------------------------------------------
 
   // --- Function to send input to Chatbot Backend ---
   const sendInputToChatbot = async (messageText) => {
      if (!messageText || messageText.trim() === '') {
-       setIsProcessing(false); // Ensure indicator is hidden if message is empty
+       // Don't proceed if message is empty, ensure processing is false
+       setIsProcessing(false);
        return;
      }
 
@@ -324,7 +329,13 @@ const VoiceAssistanceScreen = ({ navigation }) => {
      if (!isProcessing) setIsProcessing(true);
 
      // Add placeholder for AI response (optional, could just wait)
-     // handleNewMessage({ source: 'ai', type: 'text', message: '...', id: 'thinking' });
+     const aiThinkingMessageId = `ai-thinking-${Date.now()}`;
+     handleNewMessage({
+       source: 'ai',
+       type: 'text',
+       message: '...', // Indicate thinking
+       id: aiThinkingMessageId,
+     });
 
      try {
        console.log(`Sending to ${API_URL}/chat:`, messageText);
@@ -344,40 +355,78 @@ const VoiceAssistanceScreen = ({ navigation }) => {
        // WARNING: This waits for the full response.
        // TODO: Refactor to use response.body.getReader() for true streaming.
        const responseText = await response.text();
-       console.log('Raw response text from /chat:', responseText);
+       console.log('Raw response text from /chat:', responseText); // Keep for debugging if needed
 
        let aiResponseText = '';
+       let parseErrorOccurred = false;
        try {
          // Attempt to parse assuming newline-separated JSON chunks
          const lines = responseText.split('\n').filter(line => line.trim());
-         for (const line of lines) {
-           const data = JSON.parse(line);
-           if (data.text) aiResponseText += data.text;
+         if (lines.length > 0) {
+           for (const line of lines) {
+             try {
+               const data = JSON.parse(line);
+               if (data.text) {
+                 aiResponseText += data.text; // Accumulate only the 'text' part
+               } else if (data.error) {
+                 // Handle potential error messages within the stream
+                 console.error("Error chunk received from backend:", data.error);
+                 aiResponseText = `Error: ${data.error}`; // Display backend error
+                 parseErrorOccurred = true; // Treat as error
+                 break; // Stop processing further chunks on error
+               }
+             } catch (jsonParseError) {
+               // If a line isn't valid JSON, it might be the whole response or an error string
+               console.warn("Line is not JSON, treating as plain text:", line, jsonParseError);
+               if (!parseErrorOccurred && lines.length === 1) {
+                 // If it's the only line and not JSON, use it directly
+                 aiResponseText = line;
+               } else if (!parseErrorOccurred) {
+                 // Append non-JSON line if it's the first unexpected format
+                 aiResponseText += line + '\n';
+               }
+               parseErrorOccurred = true; // Mark that unexpected format was encountered
+             }
+           }
+         } else {
+           // Handle empty response body
+           console.warn("Received empty response body from /chat");
+           aiResponseText = "Received an empty response.";
+           parseErrorOccurred = true;
          }
+
        } catch (e) {
-         console.warn("Response wasn't JSON chunks, treating as plain text:", e);
-         aiResponseText = responseText; // Fallback to using the raw text
+         // Catch errors during splitting or general processing
+         console.error("Error processing response text:", e);
+         aiResponseText = "Error processing response."; // Fallback error message
+         parseErrorOccurred = true;
        }
 
-       // Add the final AI response message
-       handleNewMessage({
-         source: 'ai',
-         type: 'text',
-         message: aiResponseText.trim(),
-       });
+       // Update the thinking message with the final AI response, or replace if needed
+       setMessages(prevMessages =>
+         prevMessages.map(msg =>
+           msg.id === aiThinkingMessageId
+             ? { ...msg, message: aiResponseText.trim() } // Update the thinking bubble
+             : msg
+         )
+       );
        // ---------------------------------------------------------------------------------
 
      } catch (error) {
        console.error('Error sending/receiving message to/from chatbot:', error);
-       // Add an error message to the chat
-       handleNewMessage({
-         source: 'ai',
-         type: 'text',
-         message: `Sorry, an error occurred: ${error.message || 'Please try again.'}`,
-       });
+       // Update the thinking message with an error
+       setMessages(prevMessages =>
+         prevMessages.map(msg =>
+           msg.id === aiThinkingMessageId
+             ? { ...msg, message: `Sorry, an error occurred: ${error.message || 'Please try again.'}` }
+             : msg
+         )
+       );
      } finally {
-       setIsProcessing(false); // Hide processing indicator
-       // Set isListening back to true if you want continuous conversation
+       // IMPORTANT: Ensure processing state is reset and button is re-enabled
+       setIsProcessing(false);
+       console.log("Processing finished, button should be enabled.");
+       // Optional: Re-enable listening automatically if desired
        // setIsListening(true);
      }
   };
@@ -411,18 +460,35 @@ const VoiceAssistanceScreen = ({ navigation }) => {
 
   // Cleanup on unmount
   useEffect(() => {
+    // This function now ONLY runs when the component unmounts
     return () => {
-      if (durationInterval.current) {
-        clearInterval(durationInterval.current);
-      }
+      console.log("Running cleanup on unmount..."); // Add log for verification
+      // Check if recording instance exists *at the time of unmount*
+      // Use a ref to hold the recording instance if needed for more complex scenarios,
+      // but checking the state variable directly in the unmount cleanup is often sufficient.
       if (recording) {
-        recording.stopAndUnloadAsync().catch(err => console.error("Error unloading recording on unmount:", err));
+        console.log("Attempting to unload recording on unmount...");
+        // Clear callback before unloading during cleanup as well
+        recording.setOnRecordingStatusUpdate(null);
+        recording.stopAndUnloadAsync()
+          .then(() => console.log("Successfully unloaded recording on unmount."))
+          .catch(err => {
+            // Check if the error is the specific "already unloaded" error and ignore it if so
+            if (err.message.includes("Cannot unload a recording that has already been unloaded")) {
+              console.log("Recording was already unloaded before unmount cleanup.");
+            } else {
+              console.error("Error unloading recording on unmount:", err);
+            }
+          });
       }
       if (sound) {
-        sound.unloadAsync().catch(err => console.error("Error unloading sound on unmount:", err));
+        console.log("Attempting to unload sound on unmount...");
+        sound.unloadAsync()
+         .then(() => console.log("Successfully unloaded sound on unmount."))
+         .catch(err => console.error("Error unloading sound on unmount:", err));
       }
     };
-  }, [recording, sound]); // Add dependencies
+  }, []); // <-- Correct: Empty dependency array ensures this runs only on unmount
 
   // --- Render Message Function (Example - Adapt as needed) ---
   const renderMessage = ({ item }) => {
@@ -498,6 +564,13 @@ const VoiceAssistanceScreen = ({ navigation }) => {
     // if (isListening) return "Listening..."; // Optional state if needed
     return "Tap microphone to talk";
   };
+
+  console.log('Render check - Button Disabled State:', {
+    audioPermission,
+    isProcessing,
+    isStoppingRecording,
+    isDisabled: !audioPermission || isProcessing || isStoppingRecording // Calculate the disabled state here
+  });
 
   return (
     <SafeAreaView style={styles.container}>
