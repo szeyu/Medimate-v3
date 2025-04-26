@@ -4,10 +4,7 @@ import { Audio } from 'expo-av';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import GlucoseLevelCard from '../widgets/GlucoseLevelCard';
 import * as FileSystem from 'expo-file-system';
-
-// Replace with your laptop's local IP address (e.g., 192.168.1.X)
-// You can find this by running 'ifconfig' on Linux/Mac or 'ipconfig' on Windows
-const API_URL = 'http://192.168.100.16:8000';
+import { API_URL } from '../config/env';
 
 const TestGlucoseLevelScreen = () => {
   const [recording, setRecording] = useState();

@@ -13,6 +13,7 @@ import {
   StatusBar,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { API_URL } from '../config/env';
 
 const WellnessAIChatbotScreen = ({ navigation }) => {
   const [messages, setMessages] = useState([
@@ -64,7 +65,7 @@ const WellnessAIChatbotScreen = ({ navigation }) => {
     navigation.replace('VoiceAssistance');
   };
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (inputText.trim() === '') return;
 
     const userMessage = {
@@ -79,15 +80,11 @@ const WellnessAIChatbotScreen = ({ navigation }) => {
     setInputText('');
     setIsTyping(true);
 
-    // Simulate AI thinking before responding
-    setTimeout(() => {
-      setIsTyping(false);
-      const aiResponse = generateAIResponse(inputText, userHealthData);
-      const newId = (Date.now() + 1).toString();
-      
-      // Add empty message that will be streamed
+    try {
+      // Add empty AI message that will be streamed
+      const aiMessageId = (Date.now() + 1).toString();
       const aiMessage = {
-        id: newId,
+        id: aiMessageId,
         text: '',
         sender: 'ai',
         timestamp: new Date(),
@@ -95,39 +92,81 @@ const WellnessAIChatbotScreen = ({ navigation }) => {
       };
       
       setMessages((prevMessages) => [...prevMessages, aiMessage]);
-      setStreamingId(newId);
+      setStreamingId(aiMessageId);
       setStreamingText('');
+
+      // Make API call to backend
+      const response = await fetch(`${API_URL}/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: inputText,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      // Get the response text
+      const responseText = await response.text();
       
-      // Start streaming the text
-      let index = 0;
-      streamingIntervalRef.current = setInterval(() => {
-        if (index <= aiResponse.length) {
-          const currentText = aiResponse.substring(0, index);
-          setStreamingText(currentText);
+      // Split the response into lines and process each line
+      const lines = responseText.split('\n').filter(line => line.trim());
+      let accumulatedText = '';
+
+      for (let i = 0; i < lines.length; i++) {
+        try {
+          const data = JSON.parse(lines[i]);
           
-          // Update the message with the current streamed text
-          setMessages(prevMessages => 
-            prevMessages.map(msg => 
-              msg.id === newId ? { ...msg, text: currentText } : msg
-            )
-          );
+          if (data.error) {
+            throw new Error(data.error);
+          }
           
-          index++;
-        } else {
-          // Streaming complete
-          clearInterval(streamingIntervalRef.current);
-          
-          // Update the message to mark streaming as complete
-          setMessages(prevMessages => 
-            prevMessages.map(msg => 
-              msg.id === newId ? { ...msg, isStreaming: false } : msg
-            )
-          );
-          
-          setStreamingId(null);
+          if (!data.done) {
+            accumulatedText += data.text;
+            
+            // Update message text
+            setMessages(prevMessages => 
+              prevMessages.map(msg => 
+                msg.id === aiMessageId ? { ...msg, text: accumulatedText } : msg
+              )
+            );
+            
+            // Add delay between chunks
+            if (i < lines.length - 1) {
+              await new Promise(resolve => setTimeout(resolve, 30));
+            }
+          }
+        } catch (e) {
+          console.error('Error parsing JSON:', e);
         }
-      }, 30); // Speed of typing, adjust as needed
-    }, 1500); // Thinking time before starting to type
+      }
+
+      // Mark message as complete
+      setMessages(prevMessages => 
+        prevMessages.map(msg => 
+          msg.id === aiMessageId ? { ...msg, isStreaming: false } : msg
+        )
+      );
+      setStreamingId(null);
+      setIsTyping(false);
+
+    } catch (error) {
+      console.error('Error:', error);
+      setIsTyping(false);
+      // Add error message
+      const errorMessage = {
+        id: Date.now().toString(),
+        text: 'Sorry, there was an error processing your message. Please try again.',
+        sender: 'ai',
+        timestamp: new Date(),
+        isStreaming: false,
+      };
+      setMessages((prevMessages) => [...prevMessages, errorMessage]);
+    }
   };
 
   // Clean up interval on unmount

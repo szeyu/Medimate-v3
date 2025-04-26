@@ -2,10 +2,12 @@ import os
 import shutil
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 import uuid
 from OCRScanner import OCRScanner
 from voice_analyzer import VoiceAnalyzer
+from chatbot import ChatBot
 import logging
 import base64
 from io import BytesIO
@@ -42,6 +44,8 @@ ocr_scanner = OCRScanner()
 # Initialize Voice Analyzer
 voice_analyzer = VoiceAnalyzer()
 
+# Initialize ChatBot
+chatbot = ChatBot()
 
 class OCRRequest(BaseModel):
     image: str  # Base64 encoded image
@@ -64,6 +68,8 @@ class VoiceAnalysisResponse(BaseModel):
     status: str
     range_info: str
 
+class ChatRequest(BaseModel):
+    message: str
 
 class TranscriptionAnalysisRequest(BaseModel):
     transcription: str  # The transcribed text to analyze
@@ -71,7 +77,6 @@ class TranscriptionAnalysisRequest(BaseModel):
 
 class TranscriptionAnalysisResponse(BaseModel):
     key_points: str  # The analysis from Gemini AI
-
 
 @app.post("/process-medication-image", response_model=OCRResponse)
 async def process_image(request: OCRRequest):
@@ -313,6 +318,18 @@ async def train_voice_model(file: UploadFile = File(...)):
         logger.error(f"Error in request processing: {str(e)}")
         raise HTTPException(status_code=400, detail=f"Invalid request: {str(e)}")
 
+@app.post("/chat")
+async def chat_endpoint(request: ChatRequest):
+    """
+    Get a streaming response from the Gemini-powered chatbot
+    """
+    try:
+        return StreamingResponse(
+            chatbot.get_response(request.message),
+            media_type='application/json'
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/analyze-transcription", response_model=TranscriptionAnalysisResponse)
 async def analyze_transcription(request: TranscriptionAnalysisRequest):
@@ -336,7 +353,6 @@ async def analyze_transcription(request: TranscriptionAnalysisRequest):
         raise HTTPException(
             status_code=500, detail=f"Error analyzing transcription: {str(e)}"
         )
-
 
 @app.get("/")
 async def root():
