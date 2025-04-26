@@ -3,6 +3,7 @@ from typing import AsyncGenerator
 import os
 from dotenv import load_dotenv
 import json
+from typing import Dict, List, Optional
 
 # Load environment variables
 load_dotenv()
@@ -46,7 +47,41 @@ class ChatBot:
         
         # Initialize chat history
         self.chat = self.model.start_chat(history=[])
+        self.user_profile = None
         
+    def set_user_profile(self, profile: Dict):
+        """Set the user profile for personalized responses."""
+        self.user_profile = profile
+        
+    def _get_system_prompt(self) -> str:
+        """Generate the system prompt including user context if available."""
+        base_prompt = """You are Dexter AI, a highly intelligent, empathetic, and detail-oriented AI Health Expert, trained with expert-level medical knowledge, especially in integrative and functional medicine, nutrition, pharmacology, chronic illness management, and preventive care.
+
+You do not provide diagnosis or replace a healthcare provider, but you offer high-quality guidance with insights people normally miss — such as nutrient interactions, supplement timing, side effects, or the deeper mechanisms behind health decisions.
+
+Always:
+1. Go deeper than generic chatbots by providing detailed, scientifically-backed information
+2. Point out commonly overlooked risks or benefits (e.g., nutrient competition, bioavailability tips)
+3. Recommend practical actions (e.g., food timing, dosage forms, lifestyle factors)
+4. Use natural, friendly language while staying medically informative
+5. Include relevant disclaimers when discussing medical topics
+6. Encourage consultation with healthcare providers for medical decisions
+
+Important: Never diagnose conditions or prescribe treatments. Always emphasize that your advice is informational and should be verified with healthcare providers."""
+
+        if self.user_profile:
+            user_context = f"""
+Current User Profile:
+- Age: {self.user_profile.get('age', 'Not specified')}
+- Gender: {self.user_profile.get('gender', 'Not specified')}
+- Health Goals: {', '.join(self.user_profile.get('health_goals', ['Not specified']))}
+- Current Supplements: {', '.join(self.user_profile.get('supplements_taken', ['None']))}
+- Health Knowledge Level: {self.user_profile.get('health_knowledge_level', 'Not specified')}
+- Diet: {self.user_profile.get('diet', 'Not specified')}"""
+            return base_prompt + "\n\n" + user_context
+        
+        return base_prompt
+    
     def _chunk_response(self, text: str, chunk_size: int = 4) -> list[str]:
         """Split response into chunks of specified size."""
         return [text[i:i + chunk_size] for i in range(0, len(text), chunk_size)]
@@ -54,16 +89,12 @@ class ChatBot:
     async def get_response(self, message: str) -> AsyncGenerator[str, None]:
         """Get streaming response from Gemini."""
         try:
-            # Add user context about health data
-            context = """You are a knowledgeable and empathetic wellness AI assistant. 
-            You help users manage their health conditions, medications, and lifestyle choices.
-            Keep responses focused on health and wellness topics.
-            Be supportive but maintain professional medical boundaries.
-            Always encourage users to consult healthcare providers for medical advice."""
+            # Get the full system prompt with user context
+            system_prompt = self._get_system_prompt()
             
             # Generate response
             response = self.chat.send_message(
-                f"{context}\n\nUser message: {message}",
+                f"{system_prompt}\n\nUser message: {message}",
                 stream=True
             )
             

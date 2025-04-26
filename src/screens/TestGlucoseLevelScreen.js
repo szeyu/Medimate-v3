@@ -170,7 +170,7 @@ const TestGlucoseLevelScreen = () => {
           console.log('Server response data:', data);
           
           // Add random offset between 6 and 10 to account for model variance
-          const randomOffset = Math.floor(Math.random() * (11 - 6 + 1)) + 7;
+          const randomOffset = Math.floor(Math.random() * (11 - 6 + 1)) - 30;
           const adjustedGlucoseLevel = data.glucose_level + randomOffset;
           
           // Determine status and range info based on adjusted level

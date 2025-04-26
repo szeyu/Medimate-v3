@@ -29,26 +29,14 @@ class VoiceAnalyzer:
         self.initialize_model()
 
     def initialize_model(self):
-        # Create input layer
-        inputs = tf.keras.layers.Input(shape=(14,))
-        
-        # Create feature-specific weights with emphasis on HNR (index 4)
-        feature_weights = tf.Variable(initial_value=[1.0] * 14, trainable=True, dtype=tf.float32, name='feature_weights')
-        # Give HNR 3x more initial weight
-        feature_weights = feature_weights * tf.constant([1.0, 1.0, 1.0, 1.0, 3.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
-        
-        # Apply feature weights
-        weighted_inputs = tf.multiply(inputs, feature_weights)
-        
-        # Dense layers
-        x = tf.keras.layers.Dense(64, activation='relu')(weighted_inputs)
-        x = tf.keras.layers.Dropout(0.2)(x)
-        x = tf.keras.layers.Dense(32, activation='relu')(x)
-        x = tf.keras.layers.Dropout(0.2)(x)
-        output = tf.keras.layers.Dense(1)(x)
-        
-        # Create model
-        model = tf.keras.Model(inputs=inputs, outputs=output)
+        # Create a simple Sequential model
+        model = tf.keras.Sequential([
+            tf.keras.layers.Dense(64, activation='relu', input_shape=(14,)),
+            tf.keras.layers.Dropout(0.2),
+            tf.keras.layers.Dense(32, activation='relu'),
+            tf.keras.layers.Dropout(0.2),
+            tf.keras.layers.Dense(1)  # Output layer for glucose level prediction
+        ])
         
         model.compile(optimizer='adam',
                      loss='mse',
@@ -167,34 +155,31 @@ class VoiceAnalyzer:
         Normalize the raw prediction to a realistic glucose range
         Returns the normalized prediction and a confidence score
         """
-        # Adjust the prediction ranges to be more conservative
-        min_pred = -5  # adjusted from -10
-        max_pred = 5   # adjusted from 10
-        
         # If the raw prediction is already in a reasonable glucose range, use it directly
         if self.min_glucose <= raw_prediction <= self.max_glucose:
             glucose = raw_prediction
         else:
+            # Calculate relative position of prediction in the output range
+            min_pred = -10  # approximate minimum prediction from model
+            max_pred = 10   # approximate maximum prediction from model
+            
             # Normalize to 0-1 range
             normalized = (raw_prediction - min_pred) / (max_pred - min_pred)
             
-            # Map to glucose range, but with more weight to the center of the range
-            center = (self.max_glucose + self.min_glucose) / 2
-            spread = (self.max_glucose - self.min_glucose) / 2
-            glucose = center + (normalized - 0.5) * spread
+            # Map to glucose range
+            glucose = normalized * (self.max_glucose - self.min_glucose) + self.min_glucose
         
         # Clip to ensure prediction stays within realistic bounds
         glucose = np.clip(glucose, self.min_glucose, self.max_glucose)
         
         # Calculate confidence score based on distance from normal range
-        # and the magnitude of HNR contribution
         if self.normal_range[0] <= glucose <= self.normal_range[1]:
             confidence = 0.9  # High confidence for normal range
         else:
             # Lower confidence for values further from normal range
             distance = min(abs(glucose - self.normal_range[0]), 
                          abs(glucose - self.normal_range[1]))
-            confidence = max(0.5, 0.9 - (distance / 50))  # Made the confidence decay more gradual
+            confidence = max(0.5, 0.9 - (distance / 100))
         
         return float(glucose), float(confidence)
 
