@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import AiAppBar from '../../components/AiAppBar';
+import AiAppBar from '../components/AiAppBar';
 
 const AIToolsScreen = ({ navigation }) => {
   // AI tools data

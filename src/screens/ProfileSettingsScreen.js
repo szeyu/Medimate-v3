@@ -11,7 +11,7 @@ import {
   StatusBar,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import ProfileAppBar from '../../components/ProfileAppBar';
+import ProfileAppBar from '../components/ProfileAppBar';
 
 const ProfileScreen = ({ navigation, handleLogOut }) => {
   const [darkMode, setDarkMode] = React.useState(false);

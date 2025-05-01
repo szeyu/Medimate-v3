@@ -7,7 +7,7 @@ const ProfileAppBar = ({ navigation }) => {
     <>
       <View style={styles.appBar}>
         {/* Background Decorations */}
-        <Image source={require('../assets/CoverPhoto.png')} style={styles.pillImage1} />
+        <Image source={require('../../assets/CoverPhoto.png')} style={styles.pillImage1} />
         {/* Header Content */}
         <View style={styles.content}>
           {/* Back Button */}
