@@ -20,7 +20,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import CalendarStrip from 'react-native-calendar-strip';
 import * as Haptics from 'expo-haptics';
 import MedicalCard from '../../components/MedicalCard';
-import CustomAppBar from '../../../components/customAppBar';
+import CustomAppBar from '../../components/customAppBar';
 
 const { width } = Dimensions.get('window');
 

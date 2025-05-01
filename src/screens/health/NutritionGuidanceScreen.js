@@ -16,7 +16,7 @@ import YoutubePlayer from 'react-native-youtube-iframe';
 import Icon from'react-native-vector-icons/MaterialIcons';
 import { useFocusEffect } from '@react-navigation/native';
 
-import NutritionGuidanceAppBar from '../../../components/NutritionGuidanceAppBar';
+import NutritionGuidanceAppBar from '../../components/NutritionGuidanceAppBar';
 
 const NutritionGuidanceScreen = () => {
   const navigation = useNavigation();

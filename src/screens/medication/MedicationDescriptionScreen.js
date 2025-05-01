@@ -7,7 +7,7 @@ import {
   ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import MedicationDescriptionAppBar from '../../../components/medicationDescriptionAppBar';
+import MedicationDescriptionAppBar from '../../components/medicationDescriptionAppBar';
 import { BarChart } from 'react-native-gifted-charts';
 import { Ionicons } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
