@@ -22,6 +22,7 @@ import {
   transcribeAudio,
   processTranscriptionData,
 } from '../services/TranscriptionService'; // Import transcription functions
+import DisclaimerModal from '../components/DisclaimerModal';
 
 // Helper function for time formatting
 const calculateDuration = (milliseconds) => {
@@ -52,6 +53,17 @@ const VoiceAssistanceScreen = ({ navigation }) => {
   const waveAnim1 = useRef(new Animated.Value(0)).current;
   const waveAnim2 = useRef(new Animated.Value(0)).current;
   const waveAnim3 = useRef(new Animated.Value(0)).current;
+
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
+  
+  // Show disclaimer popup after 2 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowDisclaimer(true);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // --- Request Audio Permissions (Adapted from TranscribeAIScreen) ---
   useEffect(() => {
@@ -671,6 +683,10 @@ const VoiceAssistanceScreen = ({ navigation }) => {
         )}
         {/* ---------------------- */}
       </View>
+      <DisclaimerModal 
+        visible={showDisclaimer} 
+        onClose={() => setShowDisclaimer(false)}
+      />
     </SafeAreaView>
   );
 };

@@ -11,9 +11,12 @@ import {
   ActivityIndicator,
   SafeAreaView,
   StatusBar,
+  Modal,
+  Animated, 
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { API_URL } from '../config/env';
+import DisclaimerModal from '../components/DisclaimerModal';
 
 const WellnessAIChatbotScreen = ({ navigation }) => {
   const [messages, setMessages] = useState([
@@ -31,6 +34,16 @@ const WellnessAIChatbotScreen = ({ navigation }) => {
   const [streamingId, setStreamingId] = useState(null);
   const flatListRef = useRef(null);
   const streamingIntervalRef = useRef(null);
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
+
+  // Show disclaimer popup after 2 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowDisclaimer(true);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // User health data (hardcoded knowledge)
   const userHealthData = {
@@ -320,7 +333,6 @@ const WellnessAIChatbotScreen = ({ navigation }) => {
           </View>
         )}
       </View>
-
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
@@ -342,6 +354,10 @@ const WellnessAIChatbotScreen = ({ navigation }) => {
           <Icon name="send" size={24} color={inputText.trim() ? "#FFFFFF" : "#CCCCCC"} />
         </TouchableOpacity>
       </KeyboardAvoidingView>
+      <DisclaimerModal 
+        visible={showDisclaimer} 
+        onClose={() => setShowDisclaimer(false)}
+      />
     </SafeAreaView>
   );
 };
