@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import MaterialComIcon from 'react-native-vector-icons/MaterialCommunityIcons'; // Add this import
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { enableScreens } from 'react-native-screens';
 import { View, StyleSheet, Text, Animated, TouchableOpacity } from 'react-native';
@@ -45,6 +46,7 @@ import HeartRateScreen from './src/screens/metrics/HeartRateScreen';
 import GetAssistanceScreen from './src/screens/medication/GetAssistanceScreen';
 import WelcomeScreen from './src/screens/WelcomeScreen.js'
 import LoginScreen from './src/screens/LoginScreen.js'
+import SignUpScreen from './src/screens/SignUpScreen.js'
 import MentalGreatScreen from './src/screens/mentalStatus/MentalGreatScreen';
 import MentalNormalScreen from './src/screens/mentalStatus/MentalNormalScreen';
 import MentalPayAttentionScreen from './src/screens/mentalStatus/MentalPayAttentionScreen';
@@ -57,6 +59,22 @@ import { Pill } from 'lucide-react-native';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+
+// Auth Stack (Screens before login)
+const AuthStack = ({ handleLogin, handleSignUp }) => {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Welcome" component={WelcomeScreen} />
+      <Stack.Screen name="LoginScreen">
+        {props => <LoginScreen {...props} handleLogin={handleLogin} />}
+      </Stack.Screen>
+      <Stack.Screen name="SignUpScreen">
+         {/* Pass handleSignUp or handleLogin if sign up should also log in */}
+        {props => <SignUpScreen {...props} handleSignUp={handleSignUp} />}
+      </Stack.Screen>
+    </Stack.Navigator>
+  );
+};
 
 // Create a stack navigator for the Home tab
 const HomeStack = () => {
@@ -370,7 +388,16 @@ const LoginStack = ({handleLogin}) => {
     >
       <Stack.Screen
         name="WelcomeScreen"
-        component={(props) => <WelcomeScreen {...props} handleLogin={handleLogin}/>}
+        // component={(props) => <WelcomeScreen {...props} handleLogin={handleLogin}/>}
+        component={WelcomeScreen}
+      />
+      <Stack.Screen
+        name="LoginScreen"
+        component={LoginScreen}
+      />
+      <Stack.Screen
+        name="SignUpScreen"
+        component={SignUpScreen}
       />
       <Stack.Screen
         name='HomeScreen'
@@ -501,14 +528,19 @@ function CustomTabBar({ state, descriptors, navigation }) {
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const handleLogin = () => {
-    setIsAuthenticated(true)
-  }
+    setIsAuthenticated(true);
+  };
+
+  const handleSignUp = () => {
+    setIsAuthenticated(true);
+  };
 
   const handleLogOut = () => {
-    setIsAuthenticated(false)
-  }
+    setIsLoggedIn(false);
+  };
 
   const ProfileStackWrapper = (props) => {
     return <ProfileStack {...props} handleLogOut={handleLogOut} />;
@@ -520,37 +552,34 @@ const App = () => {
         <NavigationContainer>
           {isAuthenticated ? (
             <Tab.Navigator
-            tabBar={props => <CustomTabBar {...props} />}
-            screenOptions={{
-              headerShown: false,
-              contentStyle: {
-                paddingBottom: 60,
-              },
-            }}
-          >
-            <Tab.Screen 
-              name="Home" 
-              component={HomeStack} 
-            />
-            <Tab.Screen
-              name="Stats"
-              component={HealthScoreStack}
-            />
-            <Tab.Screen 
-              name="AI" 
-              component={AIStack} 
-            />
-            <Tab.Screen
-              name="Medications"
-              component={MedicationStack}
-            />
-            <Tab.Screen 
-              name="Profile" 
-              component={ProfileStackWrapper}
-            />
-          </Tab.Navigator>
-          ):(
-            <LoginStack handleLogin={handleLogin}/>
+              tabBar={props => <CustomTabBar {...props} />}
+              screenOptions={{
+                headerShown: false,
+              }}
+            >
+              <Tab.Screen 
+                name="Home" 
+                component={HomeStack} 
+              />
+              <Tab.Screen
+                name="Stats"
+                component={HealthScoreStack}
+              />
+              <Tab.Screen 
+                name="AI" 
+                component={AIStack} 
+              />
+              <Tab.Screen
+                name="Medications"
+                component={MedicationStack}
+              />
+              <Tab.Screen 
+                name="Profile" 
+                component={ProfileStackWrapper}
+              />
+            </Tab.Navigator>
+          ) : (
+            <AuthStack handleLogin={handleLogin} handleSignUp={handleSignUp} />
           )}
         </NavigationContainer>
       </MedicationProvider>
