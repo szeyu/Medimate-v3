@@ -18,13 +18,14 @@ import * as WebBrowser from "expo-web-browser";
 import * as Google from "expo-auth-session/providers/google";
 import { signInWithCredential, GoogleAuthProvider } from "firebase/auth";
 import { auth } from "../config/firebaseConfig";
+import { EXPO_CLIENT_ID, IOS_CLIENT_ID } from "@env";
 
 WebBrowser.maybeCompleteAuthSession();
 
 export default function GoogleLogin({ handleLogin}) {
   const [request, response, promptAsync] = Google.useAuthRequest({
-    expoClientId: "336819940127-bnmtp7bh2245d7st2gjfehoi67jvr306.apps.googleusercontent.com",
-    iosClientId: "336819940127-bcshejqgf9kian7u8o1l2761kc1uikb3.apps.googleusercontent.com",
+    expoClientId: "",
+    iosClientId: "",
     redirectUri: "com.googleusercontent.apps.336819940127-bcshejqgf9kian7u8o1l2761kc1uikb3:/oauthredirect"
   });
 
