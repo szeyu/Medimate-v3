@@ -8,6 +8,7 @@ import { enableScreens } from 'react-native-screens';
 import { View, StyleSheet, Text, Animated, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MaterialComIcon from 'react-native-vector-icons/MaterialCommunityIcons'; // Add this import
+import * as FileSystem from 'expo-file-system';
 
 // Enable screens for better performance
 enableScreens();
@@ -51,17 +52,54 @@ import MentalNormalScreen from './src/screens/mentalStatus/MentalNormalScreen';
 import MentalPayAttentionScreen from './src/screens/mentalStatus/MentalPayAttentionScreen';
 import MentalOverloadScreen from './src/screens/mentalStatus/MentalOverloadScreen';
 import SignUpScreen from './src/screens/SignUpScreen.js'
+import HealthInfoScreen from './src/screens/HealthInfoScreen';
 
 // Import providers
 import { MedicationProvider } from './src/providers/MedicationProvider';
+import { UserHealthProvider, useUserHealth } from './src/providers/UserHealthProvider';
 import { Pill } from 'lucide-react-native';
 
+// Function to save user data to file
+const saveUserDataToFile = async (userData) => {
+  try {
+    // Save to a JSON file
+    const fileUri = `${FileSystem.documentDirectory}user_data.json`;
+    await FileSystem.writeAsStringAsync(fileUri, JSON.stringify(userData, null, 2));
+    console.log('User data saved to:', fileUri);
+    return true;
+  } catch (error) {
+    console.error('Error saving user data:', error);
+    return false;
+  }
+};
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
 // Auth Stack (Screens before login)
-const AuthStack = ({ handleLogin, handleSignUp }) => {
+const AuthStackWithContext = ({ handleLogin, handleSignUp }) => {
+  const { updateHealthData } = useUserHealth();
+  const [tempUserData, setTempUserData] = useState(null);
+
+  const handleSignUpWithUserData = (userData) => {
+    // Store user data temporarily
+    setTempUserData(userData);
+  };
+
+  const handleHealthInfoCompletion = (healthData) => {
+    // Update global health data context
+    updateHealthData(healthData);
+    
+    // Combine user data with health data
+    const completeUserData = {
+      ...tempUserData,
+      healthInfo: healthData
+    };
+    
+    // Pass to App.js's handleSignUp
+    handleSignUp(completeUserData);
+  };
+
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Welcome" component={WelcomeScreen} />
@@ -69,8 +107,14 @@ const AuthStack = ({ handleLogin, handleSignUp }) => {
         {props => <LoginScreen {...props} handleLogin={handleLogin} />}
       </Stack.Screen>
       <Stack.Screen name="SignUpScreen">
-         {/* Pass handleSignUp or handleLogin if sign up should also log in */}
-        {props => <SignUpScreen {...props} handleSignUp={handleSignUp} />}
+        {props => <SignUpScreen {...props} handleSignUp={(userData) => {
+          // Store user data and navigate to health info screen
+          handleSignUpWithUserData(userData);
+          props.navigation.navigate('HealthInfoScreen');
+        }} />}
+      </Stack.Screen>
+      <Stack.Screen name="HealthInfoScreen">
+        {props => <HealthInfoScreen {...props} completeSignUp={handleHealthInfoCompletion} />}
       </Stack.Screen>
     </Stack.Navigator>
   );
@@ -529,17 +573,33 @@ function CustomTabBar({ state, descriptors, navigation }) {
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userData, setUserData] = useState(null);
 
   const handleLogin = () => {
     setIsAuthenticated(true);
   };
 
-  const handleSignUp = () => {
+  const handleSignUp = (data) => {
+    // Here you would typically send the data to your backend
+    // and authenticate the user
+    console.log('User signed up with data:', data);
+    
+    // Save the user data
+    if (data) {
+      setUserData(data);
+      
+      // Save to file system
+      saveUserDataToFile(data);
+    }
+    
+    // Set authentication state to true to navigate to home screen
     setIsAuthenticated(true);
   };
 
   const handleLogOut = () => {
     setIsLoggedIn(false);
+    setIsAuthenticated(false);
+    setUserData(null);
   };
 
   const ProfileStackWrapper = (props) => {
@@ -548,41 +608,43 @@ const App = () => {
 
   return (
     <SafeAreaProvider>
-      <MedicationProvider>
-        <NavigationContainer>
-          {isAuthenticated ? (
-            <Tab.Navigator
-              tabBar={props => <CustomTabBar {...props} />}
-              screenOptions={{
-                headerShown: false,
-              }}
-            >
-              <Tab.Screen 
-                name="Home" 
-                component={HomeStack} 
-              />
-              <Tab.Screen
-                name="Stats"
-                component={HealthScoreStack}
-              />
-              <Tab.Screen 
-                name="AI" 
-                component={AIStack} 
-              />
-              <Tab.Screen
-                name="Medications"
-                component={MedicationStack}
-              />
-              <Tab.Screen 
-                name="Profile" 
-                component={ProfileStackWrapper}
-              />
-            </Tab.Navigator>
-          ) : (
-            <AuthStack handleLogin={handleLogin} handleSignUp={handleSignUp} />
-          )}
-        </NavigationContainer>
-      </MedicationProvider>
+      <UserHealthProvider>
+        <MedicationProvider>
+          <NavigationContainer>
+            {isAuthenticated ? (
+              <Tab.Navigator
+                tabBar={props => <CustomTabBar {...props} />}
+                screenOptions={{
+                  headerShown: false,
+                }}
+              >
+                <Tab.Screen 
+                  name="Home" 
+                  component={HomeStack} 
+                />
+                <Tab.Screen
+                  name="Stats"
+                  component={HealthScoreStack}
+                />
+                <Tab.Screen 
+                  name="AI" 
+                  component={AIStack} 
+                />
+                <Tab.Screen
+                  name="Medications"
+                  component={MedicationStack}
+                />
+                <Tab.Screen 
+                  name="Profile" 
+                  component={ProfileStackWrapper}
+                />
+              </Tab.Navigator>
+            ) : (
+              <AuthStackWithContext handleLogin={handleLogin} handleSignUp={handleSignUp} />
+            )}
+          </NavigationContainer>
+        </MedicationProvider>
+      </UserHealthProvider>
     </SafeAreaProvider>
   );
 };

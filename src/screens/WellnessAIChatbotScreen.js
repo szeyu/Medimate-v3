@@ -17,8 +17,10 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { API_URL } from '../config/env';
 import DisclaimerModal from '../components/DisclaimerModal';
+import { useUserHealth } from '../providers/UserHealthProvider';
 
 const WellnessAIChatbotScreen = ({ navigation }) => {
+  const { getUserHealthContext } = useUserHealth();
   const [messages, setMessages] = useState([
     {
       id: '1',
@@ -108,6 +110,16 @@ const WellnessAIChatbotScreen = ({ navigation }) => {
       setStreamingId(aiMessageId);
       setStreamingText('');
 
+      // Get user health context
+      const healthContext = getUserHealthContext();
+      
+      // Combine user message with health context
+      const messageWithContext = healthContext 
+        ? `${healthContext}\n\nUser message: ${inputText}`
+        : inputText;
+      
+      console.log('Sending message with context:', messageWithContext);
+
       // Make API call to backend
       console.log('Attempting to call API...', `${API_URL}/chat`);
       const response = await fetch(`${API_URL}/chat`, {
@@ -116,7 +128,7 @@ const WellnessAIChatbotScreen = ({ navigation }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: inputText,
+          message: messageWithContext,
         }),
       });
 

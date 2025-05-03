@@ -51,19 +51,44 @@ class ChatBot:
         """Split response into chunks of specified size."""
         return [text[i:i + chunk_size] for i in range(0, len(text), chunk_size)]
     
+    def _extract_user_message(self, message: str) -> tuple[str, str]:
+        """
+        Extracts the user's actual message from the combined message with health context.
+        Returns (user_health_context, user_message)
+        """
+        # Check if the message contains the user message pattern
+        if "User message:" in message:
+            # Split by the User message tag
+            parts = message.split("User message:", 1)
+            health_context = parts[0].strip()
+            user_message = parts[1].strip()
+            return health_context, user_message
+        else:
+            # If no pattern found, return empty context and the original message
+            return "", message
+    
     async def get_response(self, message: str) -> AsyncGenerator[str, None]:
         """Get streaming response from Gemini."""
         try:
-            # Add user context about health data
-            context = """You are a knowledgeable and empathetic wellness AI assistant. 
+            # Extract user health context if present
+            health_context, user_message = self._extract_user_message(message)
+            
+            # Add AI assistant context
+            ai_context = """You are a knowledgeable and empathetic wellness AI assistant. 
             You help users manage their health conditions, medications, and lifestyle choices.
             Keep responses focused on health and wellness topics.
             Be supportive but maintain professional medical boundaries.
             Always encourage users to consult healthcare providers for medical advice."""
             
-            # Generate response
+            # Combine contexts for the model
+            if health_context:
+                context = f"{ai_context}\n\n{health_context}"
+            else:
+                context = ai_context
+                
+            # Generate response with the combined context
             response = self.chat.send_message(
-                f"{context}\n\nUser message: {message}",
+                f"{context}\n\nUser message: {user_message}",
                 stream=True
             )
             
