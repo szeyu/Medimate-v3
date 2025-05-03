@@ -116,6 +116,16 @@ async def convert_to_wav(input_path: str, request_id: str) -> tuple[str, bool]:
     try:
         # Load the audio file using pydub
         file_ext = os.path.splitext(input_path)[1].lower()
+
+        # Add detailed check before loading
+        logger.info(f"[{request_id}] {endpoint_name} - Checking existence before pydub load: Path='{input_path}', Exists={os.path.exists(input_path)}")
+        if not os.path.exists(input_path):
+             logger.error(f"[{request_id}] {endpoint_name} - File confirmed NOT FOUND right before pydub load: {input_path}")
+             # Raising FileNotFoundError explicitly here might give a clearer trace
+             raise FileNotFoundError(f"Audio file does not exist at the specified path: {input_path}")
+        logger.info(f"[{request_id}] {endpoint_name} - File confirmed exists. Attempting AudioSegment.from_file...")
+        # End detailed check
+
         if file_ext == '.m4a':
             audio = AudioSegment.from_file(input_path, format="m4a")
         # Add other formats if needed
