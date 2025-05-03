@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import CardCarousel from "../components/CardCarousel";
+import CardCarousel from "../../components/CardCarousel";
 import HomeScreen from "./HomeScreen";
 
 const WelcomeScreen = ({ handleLogin }) => {

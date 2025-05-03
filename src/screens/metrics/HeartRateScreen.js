@@ -7,7 +7,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { LineChart } from 'react-native-gifted-charts';
-import HealthScoreAppBar from '../../components/HealthScoreAppBar';
+import HealthScoreAppBar from '../../../components/HealthScoreAppBar';
 import { Ionicons } from '@expo/vector-icons';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 

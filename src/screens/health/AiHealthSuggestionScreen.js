@@ -9,7 +9,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { FontAwesome5 } from '@expo/vector-icons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import AiHealthSuggestionAppBar from '../../components/AiHealthSuggestionAppBar';
+import AiHealthSuggestionAppBar from '../../../components/AiHealthSuggestionAppBar';
 
 const AiHealthSuggestionScreen = ({ navigation }) => {
 

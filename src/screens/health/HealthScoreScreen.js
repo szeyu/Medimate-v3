@@ -8,7 +8,7 @@ import {
   Image,
 } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
-import HealthScoreAppBar from '../../components/HealthScoreAppBar';
+import HealthScoreAppBar from '../../../components/HealthScoreAppBar';
 import { Ionicons } from '@expo/vector-icons';
 
 const HealthScoreScreen = ({ navigation }) => {

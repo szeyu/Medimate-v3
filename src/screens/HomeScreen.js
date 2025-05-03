@@ -19,7 +19,7 @@ import SmartHealthMetrics from '../widgets/SmartHealthMetrics';
 import GlucoseLevelCard from '../widgets/GlucoseLevelCard';
 import FitnessTrackerCard from '../widgets/FitnessTrackerCard';
 import MedicationManagement from '../widgets/MedicationManagementCard';
-import HomeAppBar from '../components/homeAppBar';
+import HomeAppBar from '../../components/homeAppBar';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import MaterialComIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 import MedicationManagementCard from '../widgets/MedicationManagementCard';
