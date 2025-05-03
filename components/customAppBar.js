@@ -8,8 +8,8 @@ const CustomAppBar = ({ navigation }) => {
       <StatusBar barStyle="light-content" backgroundColor="#242E49" />
       <View style={styles.appBar}>
         {/* Background Decorations */}
-        <Image source={require('../../assets/panadol1.png')} style={styles.pillImage1} />
-        <Image source={require('../../assets/panadol2.png')} style={styles.pillImage2} />
+        <Image source={require('../assets/panadol1.png')} style={styles.pillImage1} />
+        <Image source={require('../assets/panadol2.png')} style={styles.pillImage2} />
 
         {/* Header Content */}
         <View style={styles.content}>

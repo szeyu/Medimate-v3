@@ -45,7 +45,6 @@ import HeartRateScreen from './src/screens/metrics/HeartRateScreen';
 import GetAssistanceScreen from './src/screens/medication/GetAssistanceScreen';
 import WelcomeScreen from './src/screens/WelcomeScreen.js'
 import LoginScreen from './src/screens/LoginScreen.js'
-import SignUpScreen from './src/screens/SignUpScreen.js';
 import MentalGreatScreen from './src/screens/mentalStatus/MentalGreatScreen';
 import MentalNormalScreen from './src/screens/mentalStatus/MentalNormalScreen';
 import MentalPayAttentionScreen from './src/screens/mentalStatus/MentalPayAttentionScreen';
@@ -127,7 +126,7 @@ const HomeStack = () => {
       />
       <Stack.Screen
         name="BloodPressure"
-        component={BloodPressureScrreen}
+        component={BloodPressureScreen}
       />
       <Stack.Screen
         name="GetAssistance"
@@ -371,16 +370,7 @@ const LoginStack = ({handleLogin}) => {
     >
       <Stack.Screen
         name="WelcomeScreen"
-        // component={(props) => <WelcomeScreen {...props} handleLogin={handleLogin}/>}
-        component={WelcomeScreen}
-      />
-      <Stack.Screen
-        name="LoginScreen"
-        component={LoginScreen}
-      />
-      <Stack.Screen
-        name="SignUpScreen"
-        component={SignUpScreen}
+        component={(props) => <WelcomeScreen {...props} handleLogin={handleLogin}/>}
       />
       <Stack.Screen
         name='HomeScreen'

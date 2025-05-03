@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { View, Text, Image, TouchableOpacity, StatusBar, StyleSheet, TextInput, Animated, Easing } from 'react-native';
 import { Ionicons, MaterialIcons, FontAwesome } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import UserHeader from '../widgets/UserHeader';
+import UserHeader from '../src/widgets/UserHeader';
 
 const HomeAppBar = ({ navigation, username = "SSYOK" }) => {
   // Animation values
@@ -101,7 +101,7 @@ const HomeAppBar = ({ navigation, username = "SSYOK" }) => {
                 }}
               >
                 <Image 
-                  source={require('../../assets/cat.png')} 
+                  source={require('../assets/cat.png')} 
                   style={styles.catImage}
                   resizeMode="contain"
                 />

@@ -86,7 +86,7 @@ const data = (navigation, handleLogin) => [
       content: 
       <View style={styles.cardContent}>
         <Image
-            source={require("../../assets/Manager Desk 2.png")}
+            source={require("../assets/Manager Desk 2.png")}
             style={styles.image}
             resizeMode="contain"
             onError={(e) => console.log("Image load error:", e.nativeEvent.error)}
@@ -107,7 +107,7 @@ const data = (navigation, handleLogin) => [
       content:
       <View style={styles.cardContent}>
         <Image
-            source={require("../../assets/Approval 1.png")}
+            source={require("../assets/Approval 1.png")}
             style={styles.image}
             resizeMode="contain"
             onError={(e) => console.log("Image load error:", e.nativeEvent.error)}
@@ -128,7 +128,7 @@ const data = (navigation, handleLogin) => [
       content:
       <View style={styles.cardContent}>
         <Image
-            source={require("../../assets/Speaking AI.png")}
+            source={require("../assets/Speaking AI.png")}
             style={styles.image}
             resizeMode="contain"
             onError={(e) => console.log("Image load error:", e.nativeEvent.error)}
@@ -140,7 +140,7 @@ const data = (navigation, handleLogin) => [
         </Text>
       </View>
       <View style={{ flex: 1, justifyContent: "flex-start", alignItems: "centre"}}>
-          <TouchableOpacity style={styles.squareBox} onPress={() => navigation.navigate('LoginScreen')}>
+          <TouchableOpacity style={styles.squareBox} onPress={handleLogin}>
             <Text style={styles.customText}>GO!</Text>
           </TouchableOpacity>
       </View>
