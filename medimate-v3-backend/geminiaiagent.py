@@ -3,8 +3,14 @@
 
 import os
 import base64
+import logging
 import google.generativeai as genai
 from dotenv import load_dotenv
+
+# Setup logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+logger.info("--- Logger initialized successfully ---") # Add this line
 
 # Load environment variables from .env file
 load_dotenv()
@@ -111,18 +117,57 @@ def generate(input_text):
             },
         ]
 
+        logger.info("Gemini Agent: Content prepared. Calling generate_content...")
+
         # Generate content with streaming
         response = model.generate_content(
             content,
             stream=True,
         )
+        logger.info("Gemini Agent: Stream initiated.")
 
         response_text = ""
-        for chunk in response:
-            if hasattr(chunk, "text"):
-                chunk_text = chunk.text
-                response_text += chunk_text
-                print(chunk_text, end="")
+        chunk_count = 0
+        # Add more detailed logging and error handling around the loop
+        try:
+            for chunk in response:
+                chunk_count += 1
+                chunk_text = None # Initialize chunk_text for this iteration
+                try:
+                    # Check if the attribute exists AND try to access it safely
+                    if hasattr(chunk, "text"):
+                        chunk_text = chunk.text # This is where the internal IndexError occurs
+                    else:
+                         logger.warning(f"Gemini Agent: Chunk {chunk_count} received without 'text' attribute: {type(chunk)}")
+
+                    # Append only if text was successfully retrieved
+                    if chunk_text is not None:
+                        response_text += chunk_text
+                        # logger.debug(f"Gemini Agent: Appended text: '{chunk_text}'") # Optional: Log appended text
+
+                except IndexError as ie:
+                    # Specifically catch the IndexError identified from the traceback
+                    logger.warning(f"Gemini Agent: IndexError accessing chunk.text at chunk {chunk_count}. Likely an empty 'parts' list internally. Skipping chunk. Details: {ie}", exc_info=False) # Log as warning, don't need full traceback
+                    # Optionally log the chunk type or content if helpful and safe
+                    # logger.warning(f"Gemini Agent: Problematic chunk type: {type(chunk)}")
+                    continue # Skip to the next chunk
+                except Exception as access_err:
+                    # Catch any other unexpected error during text access
+                    logger.warning(f"Gemini Agent: Error accessing text from chunk {chunk_count}: {access_err}", exc_info=True)
+                    continue # Skip to the next chunk
+
+
+        except Exception as stream_err: # Catch errors during the overall streaming process
+            logger.error(f"Gemini Agent: Error during stream processing loop (outside chunk access): {stream_err}", exc_info=True)
+            logger.error(f"Gemini Agent: Last successful text: '{response_text}'")
+            raise # Re-raise the error
+
+        logger.info(f"Gemini Agent: Stream finished after {chunk_count} chunks. Full response length: {len(response_text)}")
+        # Ensure some text was generated, otherwise it might indicate a persistent issue
+        if not response_text and chunk_count > 0:
+             logger.warning("Gemini Agent: Stream finished, but no text content was extracted from chunks.")
+        elif chunk_count == 0:
+             logger.warning("Gemini Agent: Stream finished immediately with zero chunks.")
 
         return response_text
 

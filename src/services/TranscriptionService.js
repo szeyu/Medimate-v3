@@ -2,28 +2,13 @@ import axios from "axios";
 import * as FileSystem from "expo-file-system";
 import { ASSEMBLYAI_API_KEY } from "@env";
 import { Platform } from "react-native";
+import { API_URL } from "../config/env"; // Import API_URL from env config
 
 // AssemblyAI API key - Using environment variable for security
 const API_KEY = ASSEMBLYAI_API_KEY;
 
-// Determine the correct backend URL based on platform and environment
-// NOTE: Replace YOUR_LOCAL_IP with your actual IP address for physical device testing
-const getBackendUrl = () => {
-  return "http://172.20.10.4:8000"
-  // if (Platform.OS === "android") {
-  //   // 10.0.2.2 is the special IP for Android emulator to reach host localhost
-  //   return "http://10.0.2.2:8000";
-  // } else if (Platform.OS === "ios") {
-  //   // For iOS simulator, localhost works
-  //   return "http://localhost:8000";
-  // } else {
-  //   // For physical devices, you need to use your computer's actual local IP
-  //   // You can also set a specific DEV_MACHINE_IP in your .env file
-  //   return "http://172.20.10.4:8000"; // Replace with your actual IP!
-  // }
-};
-
-const BACKEND_API_URL = getBackendUrl();
+// Use the API_URL imported from the environment configuration
+const BACKEND_API_URL = API_URL;
 console.log(`Using backend URL: ${BACKEND_API_URL}`);
 
 /**
