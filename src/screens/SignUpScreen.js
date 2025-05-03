@@ -171,13 +171,20 @@ const SignUpScreen = ({ navigation, handleSignUp }) => {
         }
         
         if (isValid) {
+            // Create user data object to pass to the next screen
+            const userData = {
+                username,
+                email,
+                password
+            };
+            
             // Call the handleSignUp function passed from App.js
             if (typeof handleSignUp === 'function') {
-                handleSignUp(); // This updates the state in App.js
+                handleSignUp(userData);
             } else {
-                 console.error('handleSignUp function not provided!');
-                 // Fallback or navigate to login?
-                 // navigation.navigate('LoginScreen'); // Example fallback
+                console.error('handleSignUp function not provided!');
+                // Fallback or navigate to login?
+                // navigation.navigate('LoginScreen'); // Example fallback
             }
         }
     }, [username, email, password, confirmPassword, handleSignUp, navigation, validateEmail, hasUpperCase, hasNumber, hasSymbol, hasMinLength]);
