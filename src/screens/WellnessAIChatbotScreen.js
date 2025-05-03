@@ -96,6 +96,7 @@ const WellnessAIChatbotScreen = ({ navigation }) => {
       setStreamingText('');
 
       // Make API call to backend
+      console.log('Attempting to call API...', `${API_URL}/chat`);
       const response = await fetch(`${API_URL}/chat`, {
         method: 'POST',
         headers: {
