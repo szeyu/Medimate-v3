@@ -140,7 +140,7 @@ const data = (navigation, handleLogin) => [
         </Text>
       </View>
       <View style={{ flex: 1, justifyContent: "flex-start", alignItems: "centre"}}>
-          <TouchableOpacity style={styles.squareBox} onPress={handleLogin}>
+          <TouchableOpacity style={styles.squareBox} onPress={() => navigation.navigate('LoginScreen')}>
             <Text style={styles.customText}>GO!</Text>
           </TouchableOpacity>
       </View>

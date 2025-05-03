@@ -7,7 +7,7 @@ const ICON_SIZE = 40;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height; // Use full screen height
 
-const AnimatedBackground = () => {
+const AnimatedBackground = ({ children }) => {
   // Define icons with initial positions spread across the screen
   const [icons] = useState([
     { name: "heartbeat", position: { x: 30, y: 40 }, velocity: { x: 0.3, y: 0.2 } },
@@ -129,6 +129,9 @@ const AnimatedBackground = () => {
           <FontAwesome5 name={icon.name} size={ICON_SIZE} color="rgba(8, 3, 3, 0.15)" />
         </Animated.View>
       ))}
+      <View style={styles.contentContainer}>
+        {children}
+      </View>
     </View>
   );
 };
@@ -146,6 +149,12 @@ const styles = StyleSheet.create({
     zIndex: 1,
     opacity: 1,
   },
+  contentContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1, // Ensure content is above animations
+},
 });
 
 export default AnimatedBackground;
