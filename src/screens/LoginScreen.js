@@ -15,6 +15,7 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import AnimatedBackground from "../../components/AnimatedBackground";
+import GoogleLogin from "../components/googleLogin";
 
 const LoginScreen = ({ navigation, handleLogin }) => {
 
@@ -76,18 +77,18 @@ const LoginScreen = ({ navigation, handleLogin }) => {
         }
     }, [email, password, handleLogin, navigation]);
 
-    // Handle social sign-in
-    const handleSocialSignIn = useCallback((provider) => {
-        console.log(`Signing in with ${provider}`);
-        // In a real app, implement OAuth authentication with the selected provider
-        // For now, just navigate to HomeScreen
-        // navigation.navigate('HomeScreen ');
-        if (typeof handleLogin === 'function') {
-            handleLogin(); // This updates the state in App.js
-        } else {
-            console.error('handleLogin function not provided!');
-        }
-    }, [handleLogin]);
+    // // Handle social sign-in
+    // const handleSocialSignIn = useCallback((provider) => {
+    //     console.log(`Signing in with ${provider}`);
+    //     // In a real app, implement OAuth authentication with the selected provider
+    //     // For now, just navigate to HomeScreen
+    //     // navigation.navigate('HomeScreen ');
+    //     if (typeof handleLogin === 'function') {
+    //         handleLogin(); // This updates the state in App.js
+    //     } else {
+    //         console.error('handleLogin function not provided!');
+    //     }
+    // }, [handleLogin]);
 
     const navigateToSignUp = useCallback(() => {
         navigation.navigate('SignUpScreen');
@@ -180,15 +181,7 @@ const LoginScreen = ({ navigation, handleLogin }) => {
                                         </View>
 
                                         <View style={styles.socialButtonsContainer}>
-                                            <TouchableOpacity 
-                                                style={styles.socialButton} 
-                                                onPress={() => handleSocialSignIn('Google')}
-                                            >
-                                                <Image 
-                                                    source={require('../../assets/google-icon.png')} 
-                                                    style={styles.socialIcon} 
-                                                />
-                                            </TouchableOpacity>
+                                            <GoogleLogin handleLogin={handleLogin}/>
                                             
                                             <TouchableOpacity 
                                                 style={styles.socialButton} 
