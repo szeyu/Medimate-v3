@@ -15,6 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.vhack25",
+      "jsEngine": "hermes",
       "infoPlist": {
         "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera",
         "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone",
@@ -29,10 +30,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.anonymous.vhack25",
-      "permissions": [
-        "CAMERA",
-        "RECORD_AUDIO"
-      ]
+      "jsEngine": "hermes"
     },
     "web": {
       "favicon": "./assets/favicon.png"
