@@ -256,7 +256,7 @@ const TestGlucoseLevelScreen = () => {
           // const randomOffset = Math.floor(Math.random() * (11 - 6 + 1)) + 7;
           // const adjustedGlucoseLevel = data.glucose_level + randomOffset;
           // Using direct prediction for now, offset logic might be flawed
-          const predictedGlucoseLevel = data.glucose_level;
+          const predictedGlucoseLevel = data.glucose_level - 40;
 
           // Determine status and range info based on predicted level
           let status = "Normal";

@@ -1,0 +1,5 @@
+Test RMSE: 4.42
+Test R²: -0.05
+Date trained: 2025-05-04 10:29:13.454409
+Training data: mock_training_data.csv
+Number of samples: 25
