@@ -10,6 +10,7 @@ import {
   Platform,
   Dimensions,
   SafeAreaView,
+  Modal,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Picker } from '@react-native-picker/picker';
@@ -34,6 +35,10 @@ const HealthInfoScreen = ({ navigation, completeSignUp }) => {
   const [heightError, setHeightError] = useState('');
   const [ageError, setAgeError] = useState('');
   const [genderError, setGenderError] = useState('');
+
+  // State for modal visibility
+  const [showGenderPicker, setShowGenderPicker] = useState(false);
+  const [showBloodTypePicker, setShowBloodTypePicker] = useState(false);
 
   // Handle form submission
   const handleSubmit = () => {
@@ -189,23 +194,51 @@ const HealthInfoScreen = ({ navigation, completeSignUp }) => {
             {/* Gender */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Gender</Text>
-              <View style={styles.pickerContainer}>
+              <TouchableOpacity
+                style={styles.pickerWrapper}
+                onPress={() => setShowGenderPicker(true)} // Show the modal picker
+              >
                 <Icon name="person" size={20} color="#1167FE" style={styles.inputIcon} />
-                <Picker
-                  selectedValue={gender}
-                  style={styles.picker}
-                  onValueChange={(itemValue) => {
-                    setGender(itemValue);
-                    if (genderError) setGenderError('');
-                  }}
-                >
-                  <Picker.Item label="Select gender" value="" />
-                  <Picker.Item label="Male" value="male" />
-                  <Picker.Item label="Female" value="female" />
-                  <Picker.Item label="Prefer not to say" value="prefer-not-to-say" />
-                </Picker>
-              </View>
+                <Text style={styles.pickerText}>
+                  {gender ? gender.charAt(0).toUpperCase() + gender.slice(1) : 'Select gender'}
+                </Text>
+              </TouchableOpacity>
               {genderError ? <Text style={styles.errorText}>{genderError}</Text> : null}
+
+              {/* Modal for Gender Picker */}
+              {showGenderPicker && (
+                <Modal
+                  transparent={true}
+                  animationType="slide"
+                  visible={showGenderPicker}
+                  onRequestClose={() => setShowGenderPicker(false)}
+                >
+                  <View style={styles.modalOverlay}>
+                    <View style={styles.modalContainer}>
+                      <Text style={styles.modalTitle}>Select Gender</Text>
+                      {['Male', 'Female', 'Prefer not to say'].map((option) => (
+                        <TouchableOpacity
+                          key={option}
+                          style={styles.modalOption}
+                          onPress={() => {
+                            setGender(option.toLowerCase());
+                            setShowGenderPicker(false);
+                            if (genderError) setGenderError('');
+                          }}
+                        >
+                          <Text style={styles.modalOptionText}>{option}</Text>
+                        </TouchableOpacity>
+                      ))}
+                      <TouchableOpacity
+                        style={styles.modalCancelButton}
+                        onPress={() => setShowGenderPicker(false)}
+                      >
+                        <Text style={styles.modalCancelText}>Cancel</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </Modal>
+              )}
             </View>
 
             {/* Current Medications */}
@@ -226,25 +259,49 @@ const HealthInfoScreen = ({ navigation, completeSignUp }) => {
             {/* Blood Type */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Blood Type (Optional)</Text>
-              <View style={styles.pickerContainer}>
+              <TouchableOpacity
+                style={styles.pickerWrapper}
+                onPress={() => setShowBloodTypePicker(true)} // Show the modal picker
+              >
                 <Icon name="opacity" size={20} color="#1167FE" style={styles.inputIcon} />
-                <Picker
-                  selectedValue={bloodType}
-                  style={styles.picker}
-                  onValueChange={(itemValue) => setBloodType(itemValue)}
+                <Text style={styles.pickerText}>
+                  {bloodType ? bloodType : 'Select blood type'}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Modal for Blood Type Picker */}
+              {showBloodTypePicker && (
+                <Modal
+                  transparent={true}
+                  animationType="slide"
+                  visible={showBloodTypePicker}
+                  onRequestClose={() => setShowBloodTypePicker(false)}
                 >
-                  <Picker.Item label="Select blood type" value="" />
-                  <Picker.Item label="A+" value="A+" />
-                  <Picker.Item label="A-" value="A-" />
-                  <Picker.Item label="B+" value="B+" />
-                  <Picker.Item label="B-" value="B-" />
-                  <Picker.Item label="AB+" value="AB+" />
-                  <Picker.Item label="AB-" value="AB-" />
-                  <Picker.Item label="O+" value="O+" />
-                  <Picker.Item label="O-" value="O-" />
-                  <Picker.Item label="Unknown" value="unknown" />
-                </Picker>
-              </View>
+                  <View style={styles.modalOverlay}>
+                    <View style={styles.modalContainer}>
+                      <Text style={styles.modalTitle}>Select Blood Type</Text>
+                      {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Unknown'].map((option) => (
+                        <TouchableOpacity
+                          key={option}
+                          style={styles.modalOption}
+                          onPress={() => {
+                            setBloodType(option);
+                            setShowBloodTypePicker(false);
+                          }}
+                        >
+                          <Text style={styles.modalOptionText}>{option}</Text>
+                        </TouchableOpacity>
+                      ))}
+                      <TouchableOpacity
+                        style={styles.modalCancelButton}
+                        onPress={() => setShowBloodTypePicker(false)}
+                      >
+                        <Text style={styles.modalCancelText}>Cancel</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </Modal>
+              )}
             </View>
 
             {/* Allergies */}
@@ -352,18 +409,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
   },
-  pickerContainer: {
+  pickerWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#DDD',
     borderRadius: 8,
     backgroundColor: '#F5F7FF',
-    paddingLeft: 12,
+    paddingHorizontal: 12,
+    height: 50, // Ensure consistent height with TextInput
+  },
+  pickerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    height: Platform.select({ ios: 50, android: '100%' }), // Adjust height for iOS
   },
   picker: {
     flex: 1,
-    height: 50,
+    height: Platform.select({ ios: 50, android: '100%' }), // Ensure proper height
   },
   errorText: {
     color: '#FF3B30',
@@ -398,6 +461,45 @@ const styles = StyleSheet.create({
     color: '#666',
     fontSize: 16,
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    width: '80%',
+    backgroundColor: '#FFF',
+    borderRadius: 8,
+    padding: 20,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  modalOption: {
+    paddingVertical: 10,
+    width: '100%',
+    alignItems: 'center',
+  },
+  modalOptionText: {
+    fontSize: 16,
+    color: '#1167FE',
+  },
+  modalCancelButton: {
+    marginTop: 20,
+  },
+  modalCancelText: {
+    fontSize: 16,
+    color: '#FF3B30',
+  },
+  pickerText: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
+  },
 });
 
-export default HealthInfoScreen; 
+export default HealthInfoScreen;

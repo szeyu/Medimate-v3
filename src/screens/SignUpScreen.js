@@ -17,6 +17,7 @@ import {
 } from "react-native";
 import AnimatedBackground from "../../components/AnimatedBackground";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import GoogleLogin from "../components/googleLogin";
 
 const window = Dimensions.get('window');
 
@@ -401,15 +402,7 @@ const SignUpScreen = ({ navigation, handleSignUp }) => {
                                         </View>
 
                                         <View style={styles.socialButtonsContainer}>
-                                            <TouchableOpacity 
-                                                style={styles.socialButton} 
-                                                onPress={() => handleSocialSignIn('Google')}
-                                            >
-                                                <Image 
-                                                    source={require('../../assets/google-icon.png')} 
-                                                    style={styles.socialIcon} 
-                                                />
-                                            </TouchableOpacity>
+                                            <GoogleLogin handleLogin={handleSignUp}/>
                                             
                                             <TouchableOpacity 
                                                 style={styles.socialButton} 
