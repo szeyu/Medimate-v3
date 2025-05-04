@@ -22,7 +22,9 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { FontAwesome5, MaterialCommunityIcons, Ionicons, Feather } from '@expo/vector-icons';
 import { useMedications } from '../../providers/MedicationProvider';
 import * as Haptics from 'expo-haptics';
+import * as Location from 'expo-location';
 import { Scroll } from 'lucide-react-native';
+import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 
 const { width, height } = Dimensions.get('window');
 
@@ -175,7 +177,6 @@ const GetAssistanceScreen = ({ navigation }) => {
   const [activeTab, setActiveTab] = useState('support');
   const [selectedItem, setSelectedItem] = useState(null);
   const [showDetailPanel, setShowDetailPanel] = useState(false);
-  const [userLocation, setUserLocation] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [filters, setFilters] = useState({
@@ -189,6 +190,135 @@ const GetAssistanceScreen = ({ navigation }) => {
   const slideAnim = useRef(new Animated.Value(50)).current;
   const detailPanelAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  const [userLocation, setUserLocation] = useState({
+    latitude: 3.1390, // Default coordinates for Kuala Lumpur
+    longitude: 101.6869,
+    latitudeDelta: 0.05,
+    longitudeDelta: 0.05,
+  });
+  const [mapReady, setMapReady] = useState(false);
+  const mapRef = useRef(null);
+  
+  // Request location permissions and get user's current location
+  useEffect(() => {
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        try {
+          const location = await Location.getCurrentPositionAsync({});
+          setUserLocation({
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+            latitudeDelta: 0.05,
+            longitudeDelta: 0.05,
+          });
+        } catch (error) {
+          console.log('Error getting location:', error);
+          // Keep the default location if there's an error
+        }
+      }
+    })();
+  }, []);
+
+  // Generate consistent coordinates for an item based on its ID
+  const getItemCoordinates = (item) => {
+    // Use the item ID to generate consistent coordinates
+    const id = parseInt(item.id);
+    const randomLatOffset = ((id * 17) % 100) / 2000; // Generate consistent offsets
+    const randomLngOffset = ((id * 23) % 100) / 2000;
+    
+    return {
+      latitude: userLocation.latitude + (id % 2 ? randomLatOffset : -randomLatOffset),
+      longitude: userLocation.longitude + (id % 3 ? randomLngOffset : -randomLngOffset),
+    };
+  };
+  
+  // Update handleItemSelect to focus on map marker
+  const handleItemSelect = (item) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setSelectedItem(item);
+    
+    // Focus map on the selected item
+    if (mapRef.current && item) {
+      const coordinates = getItemCoordinates(item);
+      mapRef.current.animateToRegion({
+        ...coordinates,
+        latitudeDelta: 0.02,
+        longitudeDelta: 0.02,
+      }, 500);
+    }
+    
+    // Animate detail panel
+    setShowDetailPanel(true);
+    Animated.timing(detailPanelAnim, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+      easing: Easing.out(Easing.cubic),
+    }).start();
+  };
+
+  // Create a function to render map markers
+  const renderMapMarkers = () => {
+    const items = activeTab === 'support' ? supportOrganizations : pharmacyPrices;
+    
+    return items.map(item => {
+      const coordinates = getItemCoordinates(item);
+      const isSelected = selectedItem && selectedItem.id === item.id;
+      
+      return (
+        <Marker
+          key={item.id}
+          coordinate={coordinates}
+          title={item.name}
+          description={activeTab === 'support' ? item.type : `Distance: ${item.distance}`}
+          onPress={() => handleItemSelect(item)}
+        >
+          <View style={[
+            styles.mapMarker,
+            isSelected && styles.selectedMapMarker
+          ]}>
+            <Text style={styles.mapMarkerText}>{item.name.charAt(0)}</Text>
+          </View>
+        </Marker>
+      );
+    });
+  };
+
+  // Create a new function to render the interactive map
+  const renderMap = () => {
+    return (
+      <View style={styles.mapContainer}>
+        <MapView
+          ref={mapRef}
+          style={styles.map}
+          provider={PROVIDER_DEFAULT}
+          initialRegion={userLocation}
+          onMapReady={() => setMapReady(true)}
+          showsUserLocation={true}
+          showsCompass={true}
+          rotateEnabled={true}
+          zoomEnabled={true}
+          scrollEnabled={true}
+        >
+          {mapReady && renderMapMarkers()}
+        </MapView>
+        
+        {/* Map control buttons */}
+        <View style={styles.mapControls}>
+          <TouchableOpacity 
+            style={styles.mapControlButton}
+            onPress={() => {
+              mapRef.current?.animateToRegion(userLocation, 500);
+            }}
+          >
+            <Ionicons name="locate" size={20} color="#8A3FFC" />
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
   
   // Start pulse animation for "best deal" indicators
   useEffect(() => {
@@ -240,19 +370,19 @@ const GetAssistanceScreen = ({ navigation }) => {
     setShowDetailPanel(false);
   };
   
-  const handleItemSelect = (item) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setSelectedItem(item);
+  // const handleItemSelect = (item) => {
+  //   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  //   setSelectedItem(item);
     
-    // Animate detail panel
-    setShowDetailPanel(true);
-    Animated.timing(detailPanelAnim, {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: true,
-      easing: Easing.out(Easing.cubic),
-    }).start();
-  };
+  //   // Animate detail panel
+  //   setShowDetailPanel(true);
+  //   Animated.timing(detailPanelAnim, {
+  //     toValue: 1,
+  //     duration: 300,
+  //     useNativeDriver: true,
+  //     easing: Easing.out(Easing.cubic),
+  //   }).start();
+  // };
   
   const handleCloseDetailPanel = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -877,23 +1007,7 @@ const GetAssistanceScreen = ({ navigation }) => {
       </View>
       
       <View style={styles.contentContainer}>
-        <View style={styles.mapContainer}>
-          <View style={{ 
-            flex: 1, 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            backgroundColor: '#E5E7EB' 
-          }}>
-            {/* <Text style={{ fontSize: 16, color: '#666' }}>Map View</Text> */}
-            <Text style={{ fontSize: 12, color: '#999', marginTop: 4 }}>
-              {/* (Map would be displayed here in a real app) */}
-              <Image 
-                source={require('../../../assets/images/map.png')}
-                style={{ width: 600, height: 600, marginTop: 8 }}
-              />
-            </Text>
-          </View>
-        </View>
+        {renderMap()}
         
         <View style={styles.listContainer}>
           <Animated.View 
@@ -1049,8 +1163,52 @@ const styles = StyleSheet.create({
   },
   mapContainer: {
     height: height * 0.25,
+    position: 'relative',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
+  },
+  map: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  mapControls: {
+    position: 'absolute',
+    right: 10,
+    bottom: 10,
+    zIndex: 10,
+  },
+  mapControlButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  mapMarker: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#1167FE',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'white',
+  },
+  selectedMapMarker: {
+    backgroundColor: '#8A3FFC',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+  },
+  mapMarkerText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 12,
   },
   listContainer: {
     flex: 1,
