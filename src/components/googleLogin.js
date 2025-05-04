@@ -24,8 +24,8 @@ WebBrowser.maybeCompleteAuthSession();
 
 export default function GoogleLogin({ handleLogin}) {
   const [request, response, promptAsync] = Google.useAuthRequest({
-    expoClientId: "",
-    iosClientId: "",
+    expoClientId: EXPO_CLIENT_ID,
+    iosClientId: IOS_CLIENT_ID,
     redirectUri: "com.googleusercontent.apps.336819940127-bcshejqgf9kian7u8o1l2761kc1uikb3:/oauthredirect"
   });
 
