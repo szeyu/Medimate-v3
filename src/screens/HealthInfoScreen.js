@@ -27,6 +27,7 @@ const HealthInfoScreen = ({ navigation, completeSignUp }) => {
   const [allergies, setAllergies] = useState('');
   const [bloodType, setBloodType] = useState('');
   const [chronicConditions, setChronicConditions] = useState('');
+  const [medications, setMedications] = useState('');
 
   // State for form validation
   const [weightError, setWeightError] = useState('');
@@ -84,6 +85,7 @@ const HealthInfoScreen = ({ navigation, completeSignUp }) => {
         allergies,
         bloodType,
         chronicConditions,
+        medications,
       };
       
       console.log('Health data collected:', healthData);
@@ -200,11 +202,25 @@ const HealthInfoScreen = ({ navigation, completeSignUp }) => {
                   <Picker.Item label="Select gender" value="" />
                   <Picker.Item label="Male" value="male" />
                   <Picker.Item label="Female" value="female" />
-                  <Picker.Item label="Non-binary" value="non-binary" />
                   <Picker.Item label="Prefer not to say" value="prefer-not-to-say" />
                 </Picker>
               </View>
               {genderError ? <Text style={styles.errorText}>{genderError}</Text> : null}
+            </View>
+
+            {/* Current Medications */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Current Medications (Optional)</Text>
+              <View style={styles.inputContainer}>
+                <Icon name="medication" size={20} color="#1167FE" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="List medications, separated by commas"
+                  value={medications}
+                  onChangeText={setMedications}
+                  multiline
+                />
+              </View>
             </View>
 
             {/* Blood Type */}

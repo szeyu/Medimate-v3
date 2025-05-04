@@ -16,6 +16,7 @@ export const UserHealthProvider = ({ children }) => {
     allergies: '',
     bloodType: '',
     chronicConditions: '',
+    medications: '',
     // Add more health-related fields as needed
   });
 
@@ -40,6 +41,12 @@ export const UserHealthProvider = ({ children }) => {
     if (healthData.weight) contextStr += `- Weight: ${healthData.weight} kg\n`;
     if (healthData.height) contextStr += `- Height: ${healthData.height} cm\n`;
     if (healthData.bloodType) contextStr += `- Blood Type: ${healthData.bloodType}\n`;
+    
+    if (healthData.medications) {
+      contextStr += `- Current Medications: ${healthData.medications}\n`;
+    } else {
+      contextStr += `- Current Medications: None reported\n`;
+    }
     
     if (healthData.allergies) {
       contextStr += `- Allergies: ${healthData.allergies}\n`;
